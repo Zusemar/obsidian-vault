@@ -1,0 +1,232 @@
+{
+  "main": {
+    "id": "87b7bfa7d41d0b4b",
+    "type": "split",
+    "children": [
+      {
+        "id": "8ca87edf15534538",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "83f984ae7bf0738e",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "go sync.Pool.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "go sync.Pool"
+            }
+          },
+          {
+            "id": "972700e9c18d1468",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Go — sync atomic (атомики).md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Go — sync atomic (атомики)"
+            }
+          }
+        ],
+        "currentTab": 1
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "5f1a1b6ad0bb5a8b",
+    "type": "split",
+    "children": [
+      {
+        "id": "b92a9899c58a1c84",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "db41f4e3ead2cfbd",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "1651127ff44bfeac",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "9f9f46a9b8522134",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 200
+  },
+  "right": {
+    "id": "e1b89f7d0412eb6b",
+    "type": "split",
+    "children": [
+      {
+        "id": "163d013c4efb3299",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "696fb9569d9d2722",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Go — sync atomic (атомики).md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for Go — sync atomic (атомики)"
+            }
+          },
+          {
+            "id": "952acecc0c703cac",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links"
+            }
+          },
+          {
+            "id": "5c08616cb81d2956",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "9d33dddb8401d10e",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline"
+            }
+          },
+          {
+            "id": "0b3778d11c68b883",
+            "type": "leaf",
+            "state": {
+              "type": "git-view",
+              "state": {},
+              "icon": "git-pull-request",
+              "title": "Source Control"
+            }
+          }
+        ],
+        "currentTab": 4
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "bases:Create new base": false,
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "obsidian-git:Open Git source control": false
+    }
+  },
+  "active": "972700e9c18d1468",
+  "lastOpenFiles": [
+    "go sync.Map.md",
+    "sync.Mutex.md",
+    "Go — sync atomic (атомики).md",
+    "Pasted image 20260326222928.png",
+    "go sync.Pool.md",
+    "Untitled/Context.md",
+    "Untitled/Pointers.md",
+    "Untitled/Untitled 10.md",
+    "Untitled/Untitled 9.md",
+    "Untitled/Untitled 8.md",
+    "Untitled/Untitled 7.md",
+    "Untitled/Untitled 6.md",
+    "Untitled/Untitled 5.md",
+    "Untitled/Untitled 4.md",
+    "go Channel.md",
+    "go Interfaces.md",
+    "Untitled 1",
+    "go netpoller.md",
+    "go scheduler.md",
+    "go goroutine.md",
+    "L0/L0 database.md",
+    "L0/L0 architecture.md",
+    "Pasted image 20260323152645.png",
+    "go compiler.md",
+    "Pasted image 20260323152430.png",
+    "Pasted image 20260323152427.png",
+    "go gc.md",
+    "go memory model.md",
+    "go escape analysis.md",
+    "go map.md",
+    "L0/example.json.md",
+    "L0",
+    "Untitled"
+  ]
+}
