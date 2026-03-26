@@ -257,5 +257,5 @@ defer cancel()
 - [[go goroutine]] — каждая горутина должна слушать `ctx.Done()` для graceful shutdown
 - [[go Channel]] — `ctx.Done()` возвращает `<-chan struct{}`, используется в select
 - [[go concurrency patterns]] — errgroup, pipeline с отменой через context
-- [[Go — sync atomic (атомики)]] — `done atomic.Value` внутри cancelCtx
+- [[go sync atomic (атомики)]] — `done atomic.Value` внутри cancelCtx
 - [[sync.Mutex]] — `mu sync.Mutex` защищает children map в cancelCtx

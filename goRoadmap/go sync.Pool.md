@@ -142,5 +142,5 @@ func (p *Pool) Get() any {
 - [[go gc]] — снижает нагрузку на GC; `poolCleanup` вызывается перед каждым GC-циклом; victim cache
 - [[go scheduler]] — per-P локальные пулы, pinning горутины к P на время Get/Put
 - [[go goroutine]] — горутина привязывается к P через `pin()`, preemption временно отключается
-- [[Go — sync atomic (атомики)]] — lock-free кража через CAS над `headTail`; ABA не возникает благодаря монотонным индексам
+- [[go sync atomic (атомики)]] — lock-free кража через CAS над `headTail`; ABA не возникает благодаря монотонным индексам
 - [[go memory model]] — объекты хранятся в heap; pool снижает давление на mcentral/mcache

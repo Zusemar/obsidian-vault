@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "L0 database.md",
+                "file": "sync.Mutex.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "L0 database"
+              "title": "sync.Mutex"
             }
           }
         ],
@@ -109,7 +109,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "L0 database.md",
+                "file": "sync.Mutex.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -119,7 +119,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for L0 database"
+              "title": "Backlinks for sync.Mutex"
             }
           },
           {
@@ -156,13 +156,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "L0 database.md",
+                "file": "sync.Mutex.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of L0 database"
+              "title": "Outline of sync.Mutex"
             }
           },
           {
@@ -197,10 +197,17 @@
   },
   "active": "972700e9c18d1468",
   "lastOpenFiles": [
+    "go slices.md",
+    "go testing.md",
+    "go generics.md",
+    "go defer panic recover.md",
+    "go error handling.md",
+    "go sync atomic (атомики).md",
+    "golang",
+    "memory/project_vault_structure.md",
     "L0 database.md",
     "go closures.md",
     "go Channel.md",
-    "Go — sync atomic (атомики).md",
     "api/REST.md",
     "api/protobuf.md",
     "api/gRPC.md",
@@ -216,24 +223,17 @@
     "архитектура/resilience patterns.md",
     "архитектура/queues.md",
     "архитектура/databases.md",
-    "memory/project_vault_structure.md",
     "memory",
     "L0 architecture.md",
     "api",
     "сети",
     "инфраструктура",
     "архитектура",
-    "go compiler.md",
-    "go concurrency patterns.md",
-    "go context.md",
-    "go escape analysis.md",
-    "go gc.md",
     "Pasted image 20260326222928.png",
     "Pasted image 20260323152645.png",
     "Untitled 1",
     "Pasted image 20260323152430.png",
     "Pasted image 20260323152427.png",
-    "L0",
-    "Untitled"
+    "L0"
   ]
 }

@@ -43,6 +43,93 @@
 
 ---
 
+## Что вызывает escape на heap
+
+```go
+// 1. Возврат указателя на локальную переменную
+func newInt() *int {
+    x := 42
+    return &x  // x escapes to heap
+}
+
+// 2. Передача в интерфейс
+func logValue(v any) { fmt.Println(v) }
+x := 42
+logValue(x)  // x escapes: копируется в interface{}
+
+// 3. Переменная захвачена замыканием
+func makeAdder(x int) func(int) int {
+    return func(y int) int { return x + y }  // x escapes
+}
+
+// 4. Указатель хранится в структуре которая сама escapes
+type Node struct{ val *int }
+n := &Node{val: &x}  // x escapes
+
+// 5. Размер слишком большой для стека (> 64KB)
+var big [1 << 16]byte  // escapes to heap
+```
+
+## Что остаётся на стеке
+
+```go
+// 1. Указатель не «убегает» наружу
+func sumSlice(s []int) int {
+    var sum int  // стек
+    for _, v := range s { sum += v }
+    return sum
+}
+
+// 2. Функция инлайнится — её переменные на стеке вызывающей
+func add(a, b int) int { return a + b }  // inlined → нет escape
+
+// 3. Примитивные значения без указателей
+x := 42
+y := x + 1  // оба на стеке
+```
+
+## Как читать вывод -gcflags="-m"
+
+```bash
+go build -gcflags="-m -m" ./...
+# или для конкретного файла:
+go build -gcflags="-m" main.go
+```
+
+```
+./main.go:5:2:  moved to heap: x          ← x escapes
+./main.go:10:13: inlining call to add     ← функция инлайнится
+./main.go:15:6: does not escape           ← остаётся на стеке
+./main.go:20:6: &y escapes to heap        ← y escapes
+./main.go:25:2: leaking param: s to result ← параметр s утекает через return
+```
+
+## Влияние на производительность
+
+```go
+// Benchmark: heap vs stack
+func BenchmarkStack(b *testing.B) {
+    for range b.N {
+        x := 42  // стек — нет аллокации
+        _ = x
+    }
+}
+
+func BenchmarkHeap(b *testing.B) {
+    for range b.N {
+        x := new(int)  // heap — аллокация + GC давление
+        *x = 42
+        _ = x
+    }
+}
+// Stack: ~0.3ns/op, 0 allocs
+// Heap:  ~2.5ns/op, 1 alloc/op
+```
+
+**Оптимизация:** передавать указатели только когда необходимо. Предпочитать значения для маленьких структур.
+
+---
+
 #golang #compiler #memory #runtime
 
 ## Связанные темы

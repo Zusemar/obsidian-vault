@@ -137,6 +137,90 @@ http://localhost:6060/debug/pprof/
 
 ---
 
+## GOMEMLIMIT — мягкий лимит памяти (Go 1.19+)
+
+До Go 1.19: единственный рычаг — `GOGC`. При OOM контейнер убивал процесс.
+
+`GOMEMLIMIT` устанавливает **мягкий лимит** heap: GC запускается чаще, чтобы удержаться в лимите:
+
+```bash
+GOMEMLIMIT=512MiB ./server   # или
+GOMEMLIMIT=536870912 ./server  # 512 * 1024 * 1024 байт
+```
+
+```go
+import "runtime/debug"
+
+debug.SetMemoryLimit(512 << 20)  // 512 MiB в коде
+```
+
+**Совместно с GOGC=off** — GC запускается только при подходе к лимиту:
+```bash
+GOGC=off GOMEMLIMIT=512MiB ./server
+# GC почти не запускается в нормальных условиях
+# При росте → агрессивно собирает до лимита
+```
+
+---
+
+## runtime.MemStats — метрики памяти
+
+```go
+var m runtime.MemStats
+runtime.ReadMemStats(&m)
+
+fmt.Printf("HeapAlloc:   %d MB\n", m.HeapAlloc>>20)   // живые объекты
+fmt.Printf("HeapSys:     %d MB\n", m.HeapSys>>20)     // получено от ОС
+fmt.Printf("HeapInuse:   %d MB\n", m.HeapInuse>>20)   // используемые spans
+fmt.Printf("HeapReleased:%d MB\n", m.HeapReleased>>20) // возвращено ОС
+fmt.Printf("NumGC:       %d\n",   m.NumGC)             // сколько раз запускался GC
+fmt.Printf("PauseTotalNs:%d ms\n", m.PauseTotalNs/1e6) // суммарное STW время
+fmt.Printf("GCCPUFraction:%.2f\n", m.GCCPUFraction)   // доля CPU на GC
+```
+
+**Ключевые метрики:**
+- `HeapAlloc` — реально живые объекты (≤ HeapInuse)
+- `HeapSys - HeapReleased` — память, фактически занятая у ОС
+- `GCCPUFraction > 0.25` — GC ест слишком много CPU
+
+---
+
+## GC-friendly паттерны
+
+```go
+// ПЛОХО: миллион маленьких аллокаций → давление на GC
+for i := range 1_000_000 {
+    item := &Item{ID: i}  // каждый на heap
+    process(item)
+}
+
+// ХОРОШО: пул объектов через sync.Pool
+var pool = sync.Pool{New: func() any { return &Item{} }}
+for i := range 1_000_000 {
+    item := pool.Get().(*Item)
+    item.ID = i
+    process(item)
+    item.ID = 0  // сброс перед возвратом!
+    pool.Put(item)
+}
+
+// ПЛОХО: map[string]*Value с миллионом указателей
+// GC сканирует каждый указатель при маркировке
+cache := make(map[string]*Config, 1_000_000)
+
+// ХОРОШО: map без указателей (GC не сканирует)
+cache := make(map[string]Config, 1_000_000)  // Value — struct без указателей
+// Или: использовать внешний кэш (ristretto, bigcache) с []byte
+
+// ПЛОХО: slice of pointers
+items := make([]*Item, 1_000_000)
+
+// ХОРОШО: slice of structs (один объект на heap, меньше работы GC)
+items := make([]Item, 1_000_000)
+```
+
+---
+
 #golang #runtime #gc #memory
 
 ## Связанные темы
@@ -146,3 +230,5 @@ http://localhost:6060/debug/pprof/
 - [[go escape analysis]] — определяет попадает ли объект в heap (и под GC) или остаётся на стеке
 - [[go sync.Pool]] — `poolCleanup` вызывается перед каждым GC-циклом; victim cache
 - [[go scheduler]] — Sysmon запускает GC если прошло >2 минут
+- [[go slices]] — slice of structs vs slice of pointers: GC давление
+- [[go map]] — map[K]*V → GC сканирует указатели; map[K]V быстрее при большом размере

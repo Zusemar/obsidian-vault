@@ -88,6 +88,65 @@ Go использует комбинацию механизмов, чтобы о
 
 ---
 
+## GOMAXPROCS — количество P
+
+```go
+import "runtime"
+
+// По умолчанию = runtime.NumCPU() (с Go 1.5)
+fmt.Println(runtime.GOMAXPROCS(0))  // получить текущее значение (0 = без изменений)
+runtime.GOMAXPROCS(4)               // установить 4 P
+
+// В контейнере: GOMAXPROCS может показывать количество CPU хоста, а не лимит контейнера!
+// Решение: github.com/uber-go/automaxprocs
+import _ "go.uber.org/automaxprocs"  // автоматически определяет CPU лимит cgroups
+```
+
+## runtime.Gosched() — кооперативный yield
+
+```go
+// Явно передать управление другим горутинам
+// Полезно в tight loop без точек вытеснения (до Go 1.14):
+for {
+    doWork()
+    runtime.Gosched()  // позволяет планировщику запустить другие G
+}
+```
+
+После Go 1.14 (асинхронное вытеснение через SIGURG) — редко нужен.
+
+## runtime.LockOSThread
+
+```go
+// Привязать горутину к конкретному M (потоку ОС)
+// Нужно для: CGO, OpenGL/GUI (требуют выполнения на одном треде)
+func glThread() {
+    runtime.LockOSThread()
+    defer runtime.UnlockOSThread()
+
+    // Все последующие вызовы в этой горутине — на одном M
+    gl.Init()
+    for { renderFrame() }
+}
+```
+
+## GODEBUG=schedtrace — трассировка планировщика
+
+```bash
+GODEBUG=schedtrace=1000 ./server
+# Каждые 1000мс:
+# SCHED 1000ms: gomaxprocs=8 idleprocs=6 threads=12 spinningthreads=0
+#               needspinning=0 idlethreads=3 runqueue=0 [0 0 0 0 0 0 0 0]
+
+# Расшифровка:
+# idleprocs=6    — 6 из 8 P простаивают
+# threads=12     — 12 M (потоков ОС) всего
+# runqueue=0     — горутин в глобальной очереди нет
+# [0 0 0 0...]   — горутин в локальных очередях каждого P
+```
+
+---
+
 #golang #concurrency #runtime #scheduler
 
 ## Связанные темы
@@ -97,4 +156,4 @@ Go использует комбинацию механизмов, чтобы о
 - [[go gc]] — Sysmon инициирует сборку мусора, если давно не запускалась
 - [[go Channel]] — операции с каналом как точки вытеснения планировщика
 - [[go sync.Pool]] — привязка горутины к P (pinning), per-P кэши
-- [[Go — sync atomic (атомики)]] — lock-free очереди в планировщике
+- [[go sync atomic (атомики)]] — lock-free очереди в планировщике

@@ -356,5 +356,5 @@ func worker(ctx context.Context, pulse time.Duration) (<-chan struct{}, <-chan R
 - [[go goroutine]] — утечки горутин при неправильной реализации паттернов
 - [[go context]] — отмена и дедлайны; `errgroup.WithContext`
 - [[go sync.Pool]] — снижение аллокаций в worker pool
-- [[Go — sync atomic (атомики)]] — lock-free счётчики для rate limiter
+- [[go sync atomic (атомики)]] — lock-free счётчики для rate limiter
 - [[go scheduler]] — work stealing оптимизирует fan-out без дополнительных настроек

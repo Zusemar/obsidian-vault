@@ -144,6 +144,64 @@ if newsize > maxstacksize || newsize > maxstackceiling {
 
 ---
 
+## Состояния горутины
+
+| Состояние | Константа | Описание |
+|---|---|---|
+| Runnable | `_Grunnable` | В очереди, ждёт процессора |
+| Running | `_Grunning` | Выполняется на M |
+| Waiting | `_Gwaiting` | Заблокирована (канал, mutex, sleep) |
+| Dead | `_Gdead` | Завершена, ожидает переиспользования |
+| Syscall | `_Gsyscall` | Выполняет системный вызов |
+
+## Мониторинг горутин
+
+```go
+// Количество живых горутин
+n := runtime.NumGoroutine()
+fmt.Printf("goroutines: %d\n", n)
+// Увеличение без остановки → утечка!
+
+// Stack trace всех горутин (для отладки)
+buf := make([]byte, 1<<20)
+n = runtime.Stack(buf, true)  // true = все горутины
+fmt.Printf("%s", buf[:n])
+```
+
+```bash
+# pprof: профиль горутин
+go tool pprof http://localhost:6060/debug/pprof/goroutine
+# Показывает где горутины заблокированы
+```
+
+## Обнаружение утечек горутин
+
+```go
+// Библиотека goleak (uber-go/goleak) для тестов
+func TestMyFunc(t *testing.T) {
+    defer goleak.VerifyNone(t)  // если после теста есть лишние горутины → fail
+
+    go leakyGoroutine()  // эта горутина не завершится → тест упадёт
+}
+```
+
+## sync.WaitGroup — ожидание группы горутин
+
+```go
+var wg sync.WaitGroup
+
+for _, url := range urls {
+    wg.Add(1)
+    go func(u string) {
+        defer wg.Done()
+        fetch(u)
+    }(url)
+}
+wg.Wait()  // блокируется пока все Done не вызваны
+```
+
+---
+
 #golang #concurrency #runtime
 
 ## Связанные темы
@@ -154,4 +212,4 @@ if newsize > maxstacksize || newsize > maxstackceiling {
 - [[go gc]] — утечки горутин = объекты не освобождаются сборщиком мусора
 - [[go netpoller]] — парковка горутины при ожидании сетевого I/O
 - [[sync.Mutex]] — `waitReasonSyncMutexLock`, блокировка горутины на мьютексе
-- [[Go — sync atomic (атомики)]] — атомарная генерация goid
+- [[go sync atomic (атомики)]] — атомарная генерация goid
