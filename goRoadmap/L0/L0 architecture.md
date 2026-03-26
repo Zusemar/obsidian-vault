@@ -8,3 +8,12 @@ newOrder (добавить новый заказ)
 adapters - конкретные реализации интерфейсов
 postgresql как база данных
 
+---
+
+#golang #project #architecture #clean-architecture
+
+## Связанные темы
+
+- [[L0 database]] — схема БД PostgreSQL: orders, payment, delivery, order_items
+- [[example.json]] — пример JSON-объекта заказа (тестовые данные)
+

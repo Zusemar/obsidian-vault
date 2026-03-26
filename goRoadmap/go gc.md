@@ -134,3 +134,15 @@ http://localhost:6060/debug/pprof/
 |Долгие паузы STW|слишком большой heap или активная аллокация|Оптимизировать память, уменьшить временные объекты|
 |Высокий `GCCPUFraction` (>0.25)|GC ест много CPU|Реже запускать GC или переработать логику|
 |Малый freed-memory gain|объекты удерживаются ссылками|Проверить утечки или глобальные кэши|
+
+---
+
+#golang #runtime #gc #memory
+
+## Связанные темы
+
+- [[go memory model]] — mspan, gcmarkBits, allocBits; span'ы возвращаются в пул при sweep
+- [[go goroutine]] — `gcBgMarkWorker` — фоновые горутины фазы mark; утечки горутин препятствуют GC
+- [[go escape analysis]] — определяет попадает ли объект в heap (и под GC) или остаётся на стеке
+- [[go sync.Pool]] — `poolCleanup` вызывается перед каждым GC-циклом; victim cache
+- [[go scheduler]] — Sysmon запускает GC если прошло >2 минут

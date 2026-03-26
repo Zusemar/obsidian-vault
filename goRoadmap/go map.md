@@ -20,3 +20,13 @@ Terminology:
 // group contains no match, the probe sequence selects the next group to check
 
 //A swiss table utilizes the extra control word to check all 8 slots in parallel.
+
+---
+
+#golang #datastructure #runtime
+
+## Связанные темы
+
+- [[go sync.Map]] — конкурентная map; новый HashTrieMap тоже использует идеи Swiss Table
+- [[go compiler]] — хэш-функция и seed выбираются компилятором/рантаймом при инициализации
+- [[go memory model]] — map аллоцируется в heap через аллокатор (mspan/mcache)

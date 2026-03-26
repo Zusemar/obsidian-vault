@@ -411,12 +411,11 @@ var v atomic.Pointer[MyStruct]
 
 ## Связанные темы
 
-- [[sync.Mutex]] — когда нужно больше одной переменной
-- [[sync.RWMutex]] — много читателей, мало писателей
-- [[sync.Pool]] — пул объектов, использует атомики внутри
-- [[Go Memory Model]] — happens-before, synchronizes-before
-- [[Goroutines и планировщик]] — почему mutex усыпляет, а CAS-loop нет
-- [[race detector]] — `go test -race`
-- [[lock-free data structures]] — очереди, стеки на CAS
+- [[sync.Mutex]] — когда нужно больше одной переменной или сложная логика внутри критической секции
+- [[go sync.Pool]] — использует CAS над `headTail` внутри; `poolDequeue` — пример lock-free структуры без ABA
+- [[go memory model]] — sequential consistency атомиков; happens-before гарантии аллокатора
+- [[go goroutine]] — почему mutex усыпляет горутину через планировщик, а CAS-loop нет
+- [[go scheduler]] — `runtime_procPin/Unpin` запрещает preemption во время атомарных операций Value
+- [[go sync.Map]] — `read atomic.Pointer[readOnly]` — применение атомиков для read-path без мьютекса
 
 ![[Pasted image 20260326222928.png]]

@@ -34,10 +34,21 @@ fmt.Printf("%+v", person)}
 Вот короткий список самых востребованных и полезных интерфейсных типов из стандартной библиотеки. Если вы с ними ещё не знакомы, то рекомендую почитать соответствующую документацию.  
   
 
-- [builtin.Error](https://golang.org/pkg/builtin/#error)  
-- [fmt.Stringer](https://golang.org/pkg/fmt/#Stringer)     
-- [io.Reader](https://golang.org/pkg/io/#Reader)  
-- [io.Writer](https://golang.org/pkg/io/#Writer)  
-- [io.ReadWriteCloser](https://golang.org/pkg/io/#ReadWriteCloser)  
-- [http.ResponseWriter](https://golang.org/pkg/net/http/#ResponseWriter)  
+- [builtin.Error](https://golang.org/pkg/builtin/#error)
+- [fmt.Stringer](https://golang.org/pkg/fmt/#Stringer)
+- [io.Reader](https://golang.org/pkg/io/#Reader)
+- [io.Writer](https://golang.org/pkg/io/#Writer)
+- [io.ReadWriteCloser](https://golang.org/pkg/io/#ReadWriteCloser)
+- [http.ResponseWriter](https://golang.org/pkg/net/http/#ResponseWriter)
 - [http.Handler](https://golang.org/pkg/net/http/#Handler)
+
+---
+
+#golang #types #design
+
+## Связанные темы
+
+- [[go goroutine]] — `error` интерфейс используется для обработки паник и отложенных вызовов
+- [[go netpoller]] — `io.Reader` / `io.Writer` — интерфейсы над которыми работает сетевой I/O
+- [[go Channel]] — паттерны передачи данных через каналы дополняют паттерны Reader/Writer
+- [[go map]] — `interface{}` / `any` используется как тип значения в map[string]interface{}

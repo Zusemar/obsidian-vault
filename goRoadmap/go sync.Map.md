@@ -32,3 +32,14 @@ type HashTrieMap[K comparable, V any] struct {
 - **read atomic.Pointer[readOnly]**: Указатель на структуру `readOnly`. Это «быстрый путь» (fast path) для чтений, так как доступ к ней осуществляется атомарно без захвата мьютекса.
 - **dirty map[any]*entry**: Обычная карта Go, содержащая новые ключи или измененные записи. Доступ к ней требует захвата мьютекса `mu`.
 - **misses int**: Счетчик «промахов» при чтении из `read`. Когда количество промахов становится равным количеству записей в `dirty`, «грязная» карта копируется (продвигается) в `read`
+
+---
+
+#golang #concurrency #datastructure
+
+## Связанные темы
+
+- [[Go — sync atomic (атомики)]] — `read atomic.Pointer[readOnly]`, `inited atomic.Uint32` — быстрый путь без мьютекса
+- [[sync.Mutex]] — `mu Mutex` защищает dirty-карту при записи и продвижении
+- [[go map]] — обычная Go map под капотом dirty; Swiss Table в read-path нового HashTrieMap
+- [[go goroutine]] — оптимизирована для паттерна «много читателей, редкие записи»

@@ -108,8 +108,17 @@ JOIN (
     FROM order_items
 ) i ON o.order_uid = i.order_uid
 WHERE o.order_uid = 'b563feb7b2b84b6test'
-GROUP BY 
-    o.order_uid, 
-    d.order_uid, 
+GROUP BY
+    o.order_uid,
+    d.order_uid,
     p.order_uid;
 ```
+
+---
+
+#golang #project #database #postgresql
+
+## Связанные темы
+
+- [[L0 architecture]] — архитектура проекта: entities, use cases, adapters
+- [[example.json]] — пример JSON-структуры заказа, которую хранит эта схема
