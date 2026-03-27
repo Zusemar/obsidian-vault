@@ -211,5 +211,5 @@ wg.Wait()  // блокируется пока все Done не вызваны
 - [[go memory model]] — стек горутины растёт в куче, арены и mspan
 - [[go gc]] — утечки горутин = объекты не освобождаются сборщиком мусора
 - [[go netpoller]] — парковка горутины при ожидании сетевого I/O
-- [[sync.Mutex]] — `waitReasonSyncMutexLock`, блокировка горутины на мьютексе
+- [[go sync package]] — `waitReasonSyncMutexLock`, блокировка горутины на мьютексе
 - [[go sync atomic (атомики)]] — атомарная генерация goid

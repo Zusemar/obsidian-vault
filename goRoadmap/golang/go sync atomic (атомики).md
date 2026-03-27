@@ -411,7 +411,7 @@ var v atomic.Pointer[MyStruct]
 
 ## Связанные темы
 
-- [[sync.Mutex]] — когда нужно больше одной переменной или сложная логика внутри критической секции
+- [[go sync package]] — когда нужно больше одной переменной или сложная логика внутри критической секции
 - [[go sync.Pool]] — использует CAS над `headTail` внутри; `poolDequeue` — пример lock-free структуры без ABA
 - [[go memory model]] — sequential consistency атомиков; happens-before гарантии аллокатора
 - [[go goroutine]] — почему mutex усыпляет горутину через планировщик, а CAS-loop нет

@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "golang/go closures.md",
+                "file": "golang/go memory model.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "go closures"
+              "title": "go memory model"
             }
           }
         ],
@@ -109,7 +109,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "golang/go Channel.md",
+                "file": "golang/go memory model.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -119,7 +119,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for go Channel"
+              "title": "Backlinks for go memory model"
             }
           },
           {
@@ -156,13 +156,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "golang/go Channel.md",
+                "file": "golang/go memory model.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of go Channel"
+              "title": "Outline of go memory model"
             }
           },
           {
@@ -195,11 +195,15 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "db41f4e3ead2cfbd",
+  "active": "972700e9c18d1468",
   "lastOpenFiles": [
-    "golang",
-    "golang/sync.Mutex.md",
+    "golang/go netpoller.md",
+    "golang/go scheduler.md",
     "golang/go slices.md",
+    "golang/go sync package.md",
+    "план повторения.md",
+    "golang/go Channel.md",
+    "golang",
     "golang/go testing.md",
     "golang/go generics.md",
     "golang/go defer panic recover.md",
@@ -209,7 +213,6 @@
     "memory/project_vault_structure.md",
     "L0 database.md",
     "golang/go closures.md",
-    "golang/go Channel.md",
     "api/REST.md",
     "api/protobuf.md",
     "api/gRPC.md",
@@ -222,8 +225,6 @@
     "инфраструктура/resilience patterns.md",
     "инфраструктура/queues.md",
     "инфраструктура/databases.md",
-    "архитектура/resilience patterns.md",
-    "архитектура/queues.md",
     "memory",
     "api",
     "сети",

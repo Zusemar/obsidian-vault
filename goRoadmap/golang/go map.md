@@ -161,5 +161,5 @@ len(m) // 0
 - [[go compiler]] — хэш-функция и seed выбираются компилятором/рантаймом при инициализации
 - [[go memory model]] — map аллоцируется в heap через аллокатор (mspan/mcache)
 - [[go generics]] — `maps.Keys`, `maps.Clone`, `maps.Equal` (Go 1.21+)
-- [[sync.Mutex]] — mutex + map = безопасная конкурентная map в большинстве случаев
+- [[go sync package]] — mutex + map = безопасная конкурентная map в большинстве случаев
 - [[go gc]] — map с указателями-значениями → GC сканирует все; map[K]uint64 быстрее

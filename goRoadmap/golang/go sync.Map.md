@@ -129,6 +129,6 @@ func (t *TypedMap[K, V]) LoadOrStore(k K, v V) (V, bool) {
 ## Связанные темы
 
 - [[go sync atomic (атомики)]] — `read atomic.Pointer[readOnly]`, `inited atomic.Uint32` — быстрый путь без мьютекса
-- [[sync.Mutex]] — `mu Mutex` защищает dirty-карту при записи и продвижении
+- [[go sync package]] — `mu Mutex` защищает dirty-карту при записи и продвижении
 - [[go map]] — обычная Go map под капотом dirty; Swiss Table в read-path нового HashTrieMap
 - [[go goroutine]] — оптимизирована для паттерна «много читателей, редкие записи»

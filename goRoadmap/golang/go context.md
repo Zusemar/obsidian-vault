@@ -258,4 +258,4 @@ defer cancel()
 - [[go Channel]] — `ctx.Done()` возвращает `<-chan struct{}`, используется в select
 - [[go concurrency patterns]] — errgroup, pipeline с отменой через context
 - [[go sync atomic (атомики)]] — `done atomic.Value` внутри cancelCtx
-- [[sync.Mutex]] — `mu sync.Mutex` защищает children map в cancelCtx
+- [[go sync package]] — `mu sync.Mutex` защищает children map в cancelCtx
