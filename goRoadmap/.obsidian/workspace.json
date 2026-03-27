@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "golang/go memory model.md",
+                "file": "golang/go closures.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "go memory model"
+              "title": "go closures"
             }
           }
         ],
@@ -109,7 +109,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "golang/go memory model.md",
+                "file": "golang/go closures.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -119,7 +119,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for go memory model"
+              "title": "Backlinks for go closures"
             }
           },
           {
@@ -156,13 +156,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "golang/go memory model.md",
+                "file": "golang/go closures.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of go memory model"
+              "title": "Outline of go closures"
             }
           },
           {
@@ -197,11 +197,12 @@
   },
   "active": "972700e9c18d1468",
   "lastOpenFiles": [
+    "план повторения.md",
+    "golang/go memory model.md",
     "golang/go netpoller.md",
     "golang/go scheduler.md",
     "golang/go slices.md",
     "golang/go sync package.md",
-    "план повторения.md",
     "golang/go Channel.md",
     "golang",
     "golang/go testing.md",
@@ -224,7 +225,6 @@
     "архитектура/interfaces.md",
     "инфраструктура/resilience patterns.md",
     "инфраструктура/queues.md",
-    "инфраструктура/databases.md",
     "memory",
     "api",
     "сети",
