@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "golang/go slices.md",
+                "file": "golang/go sync package.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "go slices"
+              "title": "go sync package"
             }
           }
         ]
@@ -183,6 +183,8 @@
   "active": "93c4afc8562475c4",
   "lastOpenFiles": [
     "golang/go WaitGroup.md",
+    "golang/go sync package.md",
+    "golang/go slices.md",
     "l2.md",
     "план повторения.md",
     "Без названия.canvas",
@@ -195,8 +197,6 @@
     "golang/go memory model.md",
     "golang/go netpoller.md",
     "golang/go scheduler.md",
-    "golang/go slices.md",
-    "golang/go sync package.md",
     "golang",
     "golang/go testing.md",
     "golang/go generics.md",
