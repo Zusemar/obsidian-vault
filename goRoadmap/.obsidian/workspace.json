@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "golang/go sync package.md",
+                "file": "golang/go Mutex.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "go sync package"
+              "title": "go Mutex"
             }
           }
         ]
@@ -182,8 +182,9 @@
   },
   "active": "93c4afc8562475c4",
   "lastOpenFiles": [
-    "golang/go WaitGroup.md",
     "golang/go sync package.md",
+    "golang/go Mutex.md",
+    "golang/go WaitGroup.md",
     "golang/go slices.md",
     "l2.md",
     "план повторения.md",
@@ -211,7 +212,6 @@
     "сети/TCP.md",
     "сети/OSI.md",
     "сети/HTTP.md",
-    "архитектура/clean architecture.md",
     "memory",
     "api",
     "сети",
