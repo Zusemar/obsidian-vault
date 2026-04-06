@@ -23,7 +23,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "golang/sync atomic (атомики).md",
+                "file": "golang/sync/sync atomic (атомики).md",
                 "mode": "source",
                 "source": false
               },
@@ -191,12 +191,13 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "a32c820495e6207c",
+  "active": "db41f4e3ead2cfbd",
   "lastOpenFiles": [
-    "golang/sync.Map.md",
-    "golang/sync.Pool.md",
-    "golang/sync package.md",
-    "golang/sync.Once.md",
+    "golang/sync",
+    "golang/sync/sync.Map.md",
+    "golang/sync/sync.Pool.md",
+    "golang/sync/sync package.md",
+    "golang/sync/sync.Once.md",
     "golang/go goroutine.md",
     "горутины.md",
     "golang/go RWMutex.md",
@@ -219,10 +220,9 @@
     "golang/go testing.md",
     "golang/go generics.md",
     "golang/go error handling.md",
-    "golang/sync atomic (атомики).md",
+    "golang/sync/sync atomic (атомики).md",
     "golang",
     "memory/project_vault_structure.md",
-    "L0 database.md",
     "memory",
     "api",
     "сети",
