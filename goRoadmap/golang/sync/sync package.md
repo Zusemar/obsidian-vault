@@ -1,6 +1,7 @@
 #golang #concurrency #sync #собес #middle
 
 `sync` — пакет примитивов синхронизации. Источник: `src/sync/`. Все типы **нельзя копировать** после первого использования (`noCopy`).
+https://github.com/golang/go/tree/release-branch.go1.26/src/sync
 
 ---
 
