@@ -178,6 +178,7 @@
   },
   "active": "93c4afc8562475c4",
   "lastOpenFiles": [
+    "golang/go RWMutex.md",
     "план повторения.md",
     "golang/go philosophy.md",
     "golang/go Mutex.md",
@@ -207,7 +208,6 @@
     "api/protobuf.md",
     "api/gRPC.md",
     "сети/TCP.md",
-    "сети/OSI.md",
     "memory",
     "api",
     "сети",
