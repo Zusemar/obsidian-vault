@@ -212,6 +212,6 @@ goready(gp)
 - [[go goroutine]] — горутины которые WaitGroup ждёт; `gopark` / `goready` меняют их статус
 - [[go scheduler]] — GMP модель; `runqput` и `runnext` после `goready`
 - [[go Channel]] — `sudog` используется и тут, и там; похожая механика парковки
-- [[go sync package]] — `sync.Mutex` использует те же семафоры рантайма с `handoff=true`
-- [[go sync atomic (атомики)]] — `atomic.Uint64` под капотом `state`; CAS в `Wait`
+- [[sync package]] — `sync.Mutex` использует те же семафоры рантайма с `handoff=true`
+- [[sync atomic (атомики)]] — `atomic.Uint64` под капотом `state`; CAS в `Wait`
 - [[go memory model]] — happens-before гарантии: `Done` happens-before возврата из `Wait`

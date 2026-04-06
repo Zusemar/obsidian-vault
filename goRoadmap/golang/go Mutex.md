@@ -189,10 +189,10 @@ Unlock → runtime_Semrelease(&m.sema):
 
 ## Связанные темы
 
-- [[go sync package]] — `RWMutex`, `Once`, `Cond` строятся поверх тех же примитивов
+- [[sync package]] — `RWMutex`, `Once`, `Cond` строятся поверх тех же примитивов
 - [[go WaitGroup]] — использует тот же `semtable`; `handoff=true` vs `handoff=false`
 - [[go Channel]] — `sudog` и `gopark`/`goready` — общая механика с мьютексом
 - [[go scheduler]] — `gopark` снимает горутину с M; `goready` возвращает в run queue
 - [[go goroutine]] — статусы горутины: `_Grunning` → `_Gwaiting` → `_Grunnable`
-- [[go sync atomic (атомики)]] — CAS и `LOCK XADD` под капотом `state`
+- [[sync atomic (атомики)]] — CAS и `LOCK XADD` под капотом `state`
 - [[go memory model]] — happens-before: `Unlock` happens-before следующего `Lock`

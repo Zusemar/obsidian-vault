@@ -71,7 +71,7 @@ func (rw *RWMutex) RLock() {
 }
 ```
 
-- Атомарный `Add(+1)` — единственная операция в fast path → [[go sync atomic (атомики)]]
+- Атомарный `Add(+1)` — единственная операция в fast path → [[sync atomic (атомики)]]
 - Результат `< 0` → писатель ждёт → `gopark` на `readerSem`
 - Горутина снимается с M, M берёт другую горутину из run queue → [[go scheduler]]
 
@@ -242,7 +242,7 @@ func Set(key, value string) {
 }
 ```
 
-Для concurrent map с read-heavy нагрузкой также стоит рассмотреть [[go sync.Map]] — не требует явного лока.
+Для concurrent map с read-heavy нагрузкой также стоит рассмотреть [[sync.Map]] — не требует явного лока.
 
 ---
 
@@ -303,12 +303,12 @@ mu.Lock() // дедлок — Lock ждёт когда RLock уйдёт, но RL
 ## Связанные темы
 
 - [[go Mutex]] — используется внутри RWMutex для сериализации писателей; сравнение fast/slow path
-- [[go sync package]] — обзор всего пакета sync: Once, Cond, WaitGroup, Pool
-- [[go sync atomic (атомики)]] — атомики на которых строится readerCount / readerWait
+- [[sync package]] — обзор всего пакета sync: Once, Cond, WaitGroup, Pool
+- [[sync atomic (атомики)]] — атомики на которых строится readerCount / readerWait
 - [[go memory model]] — happens-before гарантии RWMutex, видимость записей после Unlock
 - [[go WaitGroup]] — другой примитив sync, ожидание группы горутин
-- [[go sync.Map]] — concurrent map; альтернатива `map + RWMutex` при read-heavy нагрузке
-- [[go sync.Pool]] — переиспользование объектов без блокировок
+- [[sync.Map]] — concurrent map; альтернатива `map + RWMutex` при read-heavy нагрузке
+- [[sync.Pool]] — переиспользование объектов без блокировок
 - [[go scheduler]] — GMP, gopark/goready, почему runtime.rwmutex не может использовать gopark
 - [[go goroutine]] — жизненный цикл горутины, парковка, пробуждение
 - [[go concurrency patterns]] — паттерны с RWMutex: read-through cache, copy-on-write

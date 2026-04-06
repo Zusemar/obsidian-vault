@@ -193,5 +193,5 @@ for i := range matrix {
 - [[go generics]] — пакет `slices` generic: `slices.Sort[S ~[]E, E cmp.Ordered](x S)`
 - [[go escape analysis]] — слайс может escape если его адрес уходит наружу
 - [[go memory model]] — backing array аллоцируется через mspan/mcache
-- [[go sync.Pool]] — переиспользование []byte буферов через Pool
+- [[sync.Pool]] — переиспользование []byte буферов через Pool
 - [[go error handling]] — `slices.DeleteFunc` = Go 1.21+; не сортируй что уже отсортировано

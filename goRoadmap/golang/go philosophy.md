@@ -207,10 +207,10 @@ type error interface {
 - [[go scheduler]] — GMP, work stealing, preemption
 - [[go Channel]] — паттерны, направленные каналы, select
 - [[go context]] — отмена, дедлайны, propagation
-- [[go sync package]] — Mutex, RWMutex, Once, Cond
-- [[go sync atomic (атомики)]] — атомарные операции, memory ordering
-- [[go sync.Map]] — concurrent map, когда использовать
-- [[go sync.Pool]] — переиспользование объектов, GC interaction
+- [[sync package]] — Mutex, RWMutex, Once, Cond
+- [[sync atomic (атомики)]] — атомарные операции, memory ordering
+- [[sync.Map]] — concurrent map, когда использовать
+- [[sync.Pool]] — переиспользование объектов, GC interaction
 - [[go WaitGroup]] — ожидание группы goroutine
 - [[go Mutex]] — mutual exclusion, deadlock
 - [[go concurrency patterns]] — fan-out/in, pipeline, worker pool

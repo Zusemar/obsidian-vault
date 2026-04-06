@@ -228,7 +228,7 @@ items := make([]Item, 1_000_000)
 - [[go memory model]] — mspan, gcmarkBits, allocBits; span'ы возвращаются в пул при sweep
 - [[go goroutine]] — `gcBgMarkWorker` — фоновые горутины фазы mark; утечки горутин препятствуют GC
 - [[go escape analysis]] — определяет попадает ли объект в heap (и под GC) или остаётся на стеке
-- [[go sync.Pool]] — `poolCleanup` вызывается перед каждым GC-циклом; victim cache
+- [[sync.Pool]] — `poolCleanup` вызывается перед каждым GC-циклом; victim cache
 - [[go scheduler]] — Sysmon запускает GC если прошло >2 минут
 - [[go slices]] — slice of structs vs slice of pointers: GC давление
 - [[go map]] — map[K]*V → GC сканирует указатели; map[K]V быстрее при большом размере

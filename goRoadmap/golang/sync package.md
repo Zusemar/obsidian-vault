@@ -262,9 +262,9 @@ Mutex — один обладатель; RWMutex — много читателе
 
 ## Связанные темы
 
-- [[go sync atomic (атомики)]] — атомики как альтернатива для одной переменной; CAS vs mutex
+- [[sync atomic (атомики)]] — атомики как альтернатива для одной переменной; CAS vs mutex
 - [[go goroutine]] — `waitReasonSyncMutexLock` — причина парковки горутины
 - [[go scheduler]] — mutex усыпляет горутину через sema (планировщик), CAS-loop нет
-- [[go sync.Map]] — `mu Mutex` защищает dirty-карту; когда использовать sync.Map
+- [[sync.Map]] — `mu Mutex` защищает dirty-карту; когда использовать sync.Map
 - [[go Channel]] — каналы как альтернатива mutex для передачи данных
 - [[go concurrency patterns]] — Worker Pool использует WaitGroup; Once для singleton

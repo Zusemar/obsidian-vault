@@ -155,5 +155,5 @@ GODEBUG=schedtrace=1000 ./server
 - [[go netpoller]] — асинхронный I/O: парковка G, epoll/kqueue, пробуждение через LRQ/GRQ
 - [[go gc]] — Sysmon инициирует сборку мусора, если давно не запускалась
 - [[go Channel]] — операции с каналом как точки вытеснения планировщика
-- [[go sync.Pool]] — привязка горутины к P (pinning), per-P кэши
-- [[go sync atomic (атомики)]] — lock-free очереди в планировщике
+- [[sync.Pool]] — привязка горутины к P (pinning), per-P кэши
+- [[sync atomic (атомики)]] — lock-free очереди в планировщике

@@ -23,10 +23,6 @@ type HashTrieMap[K comparable, V any] struct {
 }
 ```
 
-
-
-
-
 Внутреннее устройство `sync.Map` включает следующие ключевые поля:
 - **mu Mutex**: Мьютекс, который защищает доступ к «грязной» карте (`dirty`) и координирует процессы обновления данных.
 - **read atomic.Pointer[readOnly]**: Указатель на структуру `readOnly`. Это «быстрый путь» (fast path) для чтений, так как доступ к ней осуществляется атомарно без захвата мьютекса.
@@ -128,7 +124,7 @@ func (t *TypedMap[K, V]) LoadOrStore(k K, v V) (V, bool) {
 
 ## Связанные темы
 
-- [[go sync atomic (атомики)]] — `read atomic.Pointer[readOnly]`, `inited atomic.Uint32` — быстрый путь без мьютекса
-- [[go sync package]] — `mu Mutex` защищает dirty-карту при записи и продвижении
+- [[sync atomic (атомики)]] — `read atomic.Pointer[readOnly]`, `inited atomic.Uint32` — быстрый путь без мьютекса
+- [[sync package]] — `mu Mutex` защищает dirty-карту при записи и продвижении
 - [[go map]] — обычная Go map под капотом dirty; Swiss Table в read-path нового HashTrieMap
 - [[go goroutine]] — оптимизирована для паттерна «много читателей, редкие записи»

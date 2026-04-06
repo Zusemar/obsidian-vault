@@ -280,4 +280,4 @@ func toInt[T Integer](v T) int { return int(v) }
 - [[go Interfaces]] — generics constraint = интерфейс; comparable; any = interface{}
 - [[go map]] — встроенные map уже generic: map[K]V; pакет `maps` (Go 1.21+)
 - [[go error handling]] — `errors.Join`, `slices.Collect` используют generics внутри
-- [[go sync.Map]] — sync.Map не generic, для типизированного варианта пиши свой с Mutex
+- [[sync.Map]] — sync.Map не generic, для типизированного варианта пиши свой с Mutex
