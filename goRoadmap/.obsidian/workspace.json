@@ -23,12 +23,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "golang/go netpoller.md",
+                "file": "golang/go scheduler.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "go netpoller"
+              "title": "go scheduler"
             }
           }
         ],
@@ -193,6 +193,8 @@
   },
   "active": "a32c820495e6207c",
   "lastOpenFiles": [
+    "golang/go RWMutex.md",
+    "golang/go netpoller.md",
     "golang/go context.md",
     "golang/sync/sync atomic (атомики).md",
     "golang/sync/sync errgroup.md",
@@ -207,7 +209,6 @@
     "golang/sync",
     "golang/go goroutine.md",
     "горутины.md",
-    "golang/go RWMutex.md",
     "план повторения.md",
     "golang/go philosophy.md",
     "golang/go Mutex.md",
@@ -218,7 +219,6 @@
     "golang/go defer panic recover.md",
     "golang/go closures.md",
     "golang/go memory model.md",
-    "golang/go netpoller.md",
     "golang/go scheduler.md",
     "golang",
     "golang/go testing.md",
