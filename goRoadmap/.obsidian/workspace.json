@@ -23,12 +23,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "l2.md",
+                "file": "golang/sync/sync.Pool.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "l2"
+              "title": "sync.Pool"
             }
           }
         ],
@@ -193,6 +193,7 @@
   },
   "active": "a32c820495e6207c",
   "lastOpenFiles": [
+    "l2.md",
     "golang/go Channel.md",
     "golang/sync/sync.Cond.md",
     "golang/sync/sync errgroup.md",
@@ -212,7 +213,6 @@
     "golang/go Mutex.md",
     "golang/go WaitGroup.md",
     "golang/go slices.md",
-    "l2.md",
     "Без названия.canvas",
     "Untitled",
     "golang/go defer panic recover.md",
