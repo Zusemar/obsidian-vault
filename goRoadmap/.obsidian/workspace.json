@@ -23,12 +23,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "golang/go Channel.md",
+                "file": "l2.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "go Channel"
+              "title": "l2"
             }
           }
         ],
@@ -193,6 +193,7 @@
   },
   "active": "a32c820495e6207c",
   "lastOpenFiles": [
+    "golang/go Channel.md",
     "golang/sync/sync.Cond.md",
     "golang/sync/sync errgroup.md",
     "golang/go context.md",
@@ -213,7 +214,6 @@
     "golang/go slices.md",
     "l2.md",
     "Без названия.canvas",
-    "golang/go Channel.md",
     "Untitled",
     "golang/go defer panic recover.md",
     "golang/go closures.md",
