@@ -259,3 +259,7 @@ defer cancel()
 - [[go concurrency patterns]] — errgroup, pipeline с отменой через context
 - [[sync atomic (атомики)]] — `done atomic.Value` внутри cancelCtx
 - [[sync package]] — `mu sync.Mutex` защищает children map в cancelCtx
+
+
+отличие потока от процесса
+4 отличия потока от горутины
