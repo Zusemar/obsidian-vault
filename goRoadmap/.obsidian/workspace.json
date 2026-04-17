@@ -23,12 +23,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "golang/go context.md",
+                "file": "golang/go Channel.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "go context"
+              "title": "go Channel"
             }
           }
         ],
@@ -193,6 +193,7 @@
   },
   "active": "a32c820495e6207c",
   "lastOpenFiles": [
+    "golang/go context.md",
     "golang/go goroutine.md",
     "golang/go Interfaces.md",
     "golang/go WaitGroup.md",
@@ -201,7 +202,6 @@
     "golang/go scheduler.md",
     "golang/go RWMutex.md",
     "golang/go netpoller.md",
-    "golang/go context.md",
     "golang/sync/sync atomic (атомики).md",
     "golang/sync/sync errgroup.md",
     "golang/sync/sync.Cond.md",
