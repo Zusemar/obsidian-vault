@@ -23,12 +23,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "golang/go Channel.md",
+                "file": "golang/go context.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "go Channel"
+              "title": "go context"
             }
           }
         ],
@@ -193,10 +193,15 @@
   },
   "active": "a32c820495e6207c",
   "lastOpenFiles": [
+    "golang/go map.md",
+    "golang/go testing.md",
+    "golang/go WaitGroup.md",
+    "Без названия.canvas",
+    "l2.md",
+    "golang/go Channel.md",
     "golang/go context.md",
     "golang/go goroutine.md",
     "golang/go Interfaces.md",
-    "golang/go WaitGroup.md",
     "golang/go SOLID.md",
     "golang/go slices.md",
     "golang/go scheduler.md",
@@ -208,8 +213,6 @@
     "golang/sync/sync.Map.md",
     "golang/sync/sync.Once.md",
     "golang/sync/sync.Pool.md",
-    "l2.md",
-    "golang/go Channel.md",
     "golang/sync/sync package.md",
     "golang/go compiler.md",
     "golang/sync",
@@ -217,11 +220,8 @@
     "план повторения.md",
     "golang/go philosophy.md",
     "golang/go Mutex.md",
-    "Без названия.canvas",
     "Untitled",
     "golang/go defer panic recover.md",
-    "golang/go closures.md",
-    "golang/go memory model.md",
     "golang",
     "golang",
     "memory",
