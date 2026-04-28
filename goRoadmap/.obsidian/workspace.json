@@ -23,12 +23,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "тиньк контест.md",
+                "file": "тиньк контест код.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "тиньк контест"
+              "title": "тиньк контест код"
             }
           }
         ],
@@ -193,8 +193,9 @@
   },
   "active": "a32c820495e6207c",
   "lastOpenFiles": [
-    "тиньк контест код.md",
     "тиньк контест.md",
+    "тиньк контест код.md",
+    "l2.md",
     "инфа.md",
     "Без названия.canvas",
     "golang/go context.md",
@@ -204,7 +205,6 @@
     "golang/go map.md",
     "golang/go testing.md",
     "golang/go WaitGroup.md",
-    "l2.md",
     "golang/go Interfaces.md",
     "golang/go SOLID.md",
     "golang/go slices.md",
