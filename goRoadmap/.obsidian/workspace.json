@@ -23,12 +23,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "тиньк контест код.md",
+                "file": "тиньк контест.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "тиньк контест код"
+              "title": "тиньк контест"
             }
           }
         ],
@@ -193,8 +193,8 @@
   },
   "active": "a32c820495e6207c",
   "lastOpenFiles": [
-    "тиньк контест.md",
     "тиньк контест код.md",
+    "тиньк контест.md",
     "l2.md",
     "инфа.md",
     "Без названия.canvas",
