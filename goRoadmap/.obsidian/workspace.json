@@ -89,8 +89,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200,
-    "collapsed": true
+    "width": 200
   },
   "right": {
     "id": "e1b89f7d0412eb6b",
@@ -194,8 +193,9 @@
   },
   "active": "a32c820495e6207c",
   "lastOpenFiles": [
-    "инфа.md",
+    "тиньк контест код.md",
     "тиньк контест.md",
+    "инфа.md",
     "Без названия.canvas",
     "golang/go context.md",
     "golang/go Channel.md",
@@ -221,7 +221,6 @@
     "golang/go compiler.md",
     "golang/sync",
     "горутины.md",
-    "план повторения.md",
     "Untitled",
     "golang",
     "golang",
