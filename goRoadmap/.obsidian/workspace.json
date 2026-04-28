@@ -23,12 +23,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "инфа.md",
+                "file": "тиньк контест.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "инфа"
+              "title": "тиньк контест"
             }
           }
         ],
@@ -89,7 +89,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200
+    "width": 200,
+    "collapsed": true
   },
   "right": {
     "id": "e1b89f7d0412eb6b",
@@ -191,10 +192,11 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "db41f4e3ead2cfbd",
+  "active": "a32c820495e6207c",
   "lastOpenFiles": [
-    "Без названия.canvas",
     "инфа.md",
+    "тиньк контест.md",
+    "Без названия.canvas",
     "golang/go context.md",
     "golang/go Channel.md",
     "golang/go closures.md",
