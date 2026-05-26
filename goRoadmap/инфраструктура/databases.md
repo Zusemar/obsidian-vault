@@ -76,22 +76,23 @@ SELECT balance FROM accounts WHERE id = 1;
 
 ### READ COMMITTED _(дефолт в PostgreSQL и Oracle)_
 
-Каждый **отдельный оператор** внутри транзакции видит свежий snapshot — данные, зафиксированные на момент _его_ старта.
+> Снапшот берётся заново **на каждый SQL-оператор**. Один и тот же SELECT, вызванный дважды внутри транзакции, может вернуть разные данные — если между вызовами кто-то сделал commit.
 
 ```sql
 -- Транзакция A:
 BEGIN;
-SELECT balance FROM accounts WHERE id = 1;  -- → 1000
+SELECT balance FROM accounts WHERE id = 1;
+-- снапшот₁ → 1000
 
 -- Транзакция B (параллельно):
 BEGIN;
 UPDATE accounts SET balance = 500 WHERE id = 1;
 COMMIT;
 
--- Транзакция A продолжает:
-SELECT balance FROM accounts WHERE id = 1;  -- → 500  ← Read Skew!
+-- Транзакция A продолжает — оператор новый, значит новый снапшот:
+SELECT balance FROM accounts WHERE id = 1;
+-- снапшот₂ → 500  ← Read Skew: тот же SELECT, другой результат
 COMMIT;
--- Два SELECT в одной транзакции вернули разные значения.
 ```
 
 **Защищает от:** Dirty Read, Dirty Write.
@@ -102,17 +103,19 @@ COMMIT;
 
 ### REPEATABLE READ / Snapshot Isolation
 
-Транзакция видит **снимок (snapshot) данных на момент своего старта** и не замечает чужих commit'ов в процессе работы.
+> Снапшот берётся **один раз при старте транзакции** и не меняется до её конца. Все операторы внутри видят один и тот же срез данных — сколько бы других транзакций ни закоммитилось за это время.
 
 ```sql
 BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+-- снапшот₁ зафиксирован здесь, один раз
 
-SELECT balance FROM accounts WHERE id = 1;  -- → 1000
+SELECT balance FROM accounts WHERE id = 1;
+-- снапшот₁ → 1000
 
 -- Транзакция B (параллельно): UPDATE ... SET balance = 500; COMMIT;
 
-SELECT balance FROM accounts WHERE id = 1;  -- → 1000 (не 500!)
--- Snapshot "заморожен" на начало транзакции A.
+SELECT balance FROM accounts WHERE id = 1;
+-- снапшот₁ → 1000  (всё ещё! новый оператор, но снапшот тот же)
 COMMIT;
 ```
 
