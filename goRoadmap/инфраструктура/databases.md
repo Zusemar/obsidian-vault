@@ -1,3 +1,7 @@
+---
+share_link: https://share.note.sx/6slm4x9o#2cOkvsEvbiRmerMOgr6mnd5YSZgMXKFB6EY2sM1r5Is
+share_updated: 2026-05-26T19:18:44+03:00
+---
 #infrastructure #databases #postgresql #sql #transactions
 
 Источники: **PostgreSQL Documentation** (postgresql.org/docs/current), **«Database Internals»** (Alex Petrov, 2019), **«Designing Data-Intensive Applications»** (Martin Kleppmann, 2017).
