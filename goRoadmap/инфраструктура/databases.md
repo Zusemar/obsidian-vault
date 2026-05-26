@@ -42,24 +42,130 @@
 
 ## Уровни изоляции
 
-| Уровень | Dirty Read | Read Skew | Phantom Read | Write Skew |
-|---|---|---|---|---|
-| READ UNCOMMITTED | ✅ (PG: нет) | ✅ | ✅ | ✅ |
-| **READ COMMITTED** (PG default) | ❌ | ✅ | ✅ | ✅ |
-| REPEATABLE READ / Snapshot | ❌ | ❌ | ✅ (PG: нет) | ✅ |
-| **SERIALIZABLE** | ❌ | ❌ | ❌ | ❌ |
+| Уровень                         | Dirty Read  | Read Skew | Phantom Read | Write Skew |
+| ------------------------------- | ----------- | --------- | ------------ | ---------- |
+| READ UNCOMMITTED                | ✅ (PG: нет) | ✅         | ✅            | ✅          |
+| **READ COMMITTED** (PG default) | ❌           | ✅         | ✅            | ✅          |
+| REPEATABLE READ / Snapshot      | ❌           | ❌         | ✅ (PG: нет)  | ✅          |
+| **SERIALIZABLE**                | ❌           | ❌         | ❌            | ❌          |
 
-- **READ COMMITTED:** каждый оператор видит snapshot на момент своего начала.
-- **REPEATABLE READ:** транзакция видит snapshot на момент _своего_ начала — одни и те же строки дадут одинаковый результат.
-- **SERIALIZABLE (SSI в PG):** транзакции ведут себя так, будто выполняются строго последовательно.
+### READ UNCOMMITTED
+
+Практически нет изоляции. Транзакция может прочитать **незафиксированные** изменения другой транзакции.
+
+> В PostgreSQL этот уровень ведёт себя как READ COMMITTED — грязное чтение намеренно не реализовано.
+
+```sql
+-- Транзакция A:
+BEGIN;
+UPDATE accounts SET balance = 9999 WHERE id = 1;
+-- ещё не COMMIT
+
+-- Транзакция B (READ UNCOMMITTED в другой СУБД):
+SELECT balance FROM accounts WHERE id = 1;
+-- → 9999  (грязное чтение! A может сделать ROLLBACK)
+```
+
+**Когда использовать:** почти никогда. Только если допустима грязная статистика (счётчики, приблизительные отчёты) и нужна максимальная скорость.
+
+---
+
+### READ COMMITTED _(дефолт в PostgreSQL и Oracle)_
+
+Каждый **отдельный оператор** внутри транзакции видит свежий snapshot — данные, зафиксированные на момент _его_ старта.
+
+```sql
+-- Транзакция A:
+BEGIN;
+SELECT balance FROM accounts WHERE id = 1;  -- → 1000
+
+-- Транзакция B (параллельно):
+BEGIN;
+UPDATE accounts SET balance = 500 WHERE id = 1;
+COMMIT;
+
+-- Транзакция A продолжает:
+SELECT balance FROM accounts WHERE id = 1;  -- → 500  ← Read Skew!
+COMMIT;
+-- Два SELECT в одной транзакции вернули разные значения.
+```
+
+**Защищает от:** Dirty Read, Dirty Write.
+**Не защищает от:** Read Skew, Phantom Read, Write Skew.
+**Когда использовать:** большинство OLTP-приложений, где не нужна полная изоляция.
+
+---
+
+### REPEATABLE READ / Snapshot Isolation
+
+Транзакция видит **снимок (snapshot) данных на момент своего старта** и не замечает чужих commit'ов в процессе работы.
 
 ```sql
 BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;
-SELECT balance FROM accounts WHERE id = 42;  -- 1000
--- Другая транзакция: UPDATE accounts SET balance = 500 WHERE id = 42; COMMIT;
-SELECT balance FROM accounts WHERE id = 42;  -- 1000 (не 500!)
+
+SELECT balance FROM accounts WHERE id = 1;  -- → 1000
+
+-- Транзакция B (параллельно): UPDATE ... SET balance = 500; COMMIT;
+
+SELECT balance FROM accounts WHERE id = 1;  -- → 1000 (не 500!)
+-- Snapshot "заморожен" на начало транзакции A.
 COMMIT;
 ```
+
+**Пример Write Skew** (этот уровень не защищает):
+
+```sql
+-- Инвариант: хотя бы один врач должен быть на дежурстве.
+-- Сейчас дежурят: Иван и Мария.
+
+-- Транзакция A (Иван берёт отгул):
+BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+SELECT COUNT(*) FROM doctors WHERE on_duty = true;  -- → 2, можно
+UPDATE doctors SET on_duty = false WHERE name = 'Иван';
+COMMIT;
+
+-- Транзакция B (Мария берёт отгул, читает snapshot ДО commit A):
+BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+SELECT COUNT(*) FROM doctors WHERE on_duty = true;  -- → 2 (snapshot!), можно
+UPDATE doctors SET on_duty = false WHERE name = 'Мария';
+COMMIT;
+
+-- Итог: никто не дежурит — инвариант нарушен.
+```
+
+**Защищает от:** Dirty Read, Dirty Write, Read Skew, Phantom Read (в PostgreSQL).
+**Не защищает от:** Write Skew.
+**Когда использовать:** отчёты, аналитика, длинные read-only транзакции, бэкапы онлайн.
+
+---
+
+### SERIALIZABLE _(SSI в PostgreSQL)_
+
+Самый строгий уровень. Гарантирует, что результат параллельного выполнения **эквивалентен** какому-либо последовательному порядку. Устраняет Write Skew.
+
+В PostgreSQL реализован через **SSI (Serializable Snapshot Isolation)** — оптимистичный подход: транзакции работают параллельно, БД отслеживает зависимости и при конфликте прерывает одну из них с ошибкой `ERROR: could not serialize access`.
+
+```sql
+-- Тот же пример с врачами — теперь на SERIALIZABLE:
+
+-- Транзакция A:
+BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+SELECT COUNT(*) FROM doctors WHERE on_duty = true;  -- → 2
+UPDATE doctors SET on_duty = false WHERE name = 'Иван';
+COMMIT;  -- ОК
+
+-- Транзакция B (параллельно):
+BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+SELECT COUNT(*) FROM doctors WHERE on_duty = true;  -- → 2
+UPDATE doctors SET on_duty = false WHERE name = 'Мария';
+COMMIT;
+-- ERROR: could not serialize access due to read/write dependencies
+-- Приложение должно повторить транзакцию B.
+```
+
+**Цена:** небольшой overhead на отслеживание зависимостей + необходимость retry при сериализационных конфликтах.
+**Защищает от:** всех аномалий.
+**Когда использовать:** финансовые операции, инварианты целостности между несколькими строками/таблицами.
 
 ---
 
