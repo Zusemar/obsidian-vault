@@ -1,6 +1,114 @@
-#infrastructure #databases #postgresql #sql
+#infrastructure #databases #postgresql #sql #transactions
 
 Источники: **PostgreSQL Documentation** (postgresql.org/docs/current), **«Database Internals»** (Alex Petrov, 2019), **«Designing Data-Intensive Applications»** (Martin Kleppmann, 2017).
+
+---
+
+## Транзакции
+
+Транзакция — логическая единица работы, объединяющая несколько операций чтения и записи в один блок.
+
+- **Цель:** упростить модель программирования — приложение может игнорировать часть сбоев и сложности конкурентного доступа.
+- **Результат:** транзакция либо **commit** (всё применено), либо **abort/rollback** (частичных изменений не остаётся).
+
+---
+
+## Гарантии ACID
+
+| Свойство | Суть | Механизм в PostgreSQL |
+|---|---|---|
+| **Atomicity** | «Всё или ничего» — при сбое все частичные изменения отбрасываются | WAL + rollback |
+| **Consistency** | БД переходит из одного корректного состояния в другое | constraints, triggers, логика приложения |
+| **Isolation** | Параллельные транзакции не мешают друг другу | MVCC |
+| **Durability** | После commit данные не пропадут даже при сбое питания | WAL fsync |
+
+> **Важно про Consistency:** за неё отвечает скорее _приложение_, чем сама БД — инварианты (например, «баланс не может быть отрицательным») задаёт разработчик.
+
+---
+
+## Аномалии конкурентности
+
+Уровни изоляции нужны для защиты от следующих эффектов:
+
+| Аномалия | Описание |
+|---|---|
+| **Dirty Read** | Транзакция видит незафиксированные данные другой транзакции (могут быть отменены) |
+| **Dirty Write** | Транзакция перезаписывает ещё не зафиксированные изменения другой транзакции |
+| **Read Skew** (Non-repeatable Read) | Повторное чтение тех же строк даёт другой результат из-за чужого commit между чтениями |
+| **Phantom Read** | Повторный запрос возвращает другое количество строк (INSERT от другой транзакции) |
+| **Write Skew** | Две транзакции читают одни данные, принимают решение и пишут в _разные_ объекты, нарушая инвариант. Пример: два дежурных врача одновременно берут отгул, думая, что второй останется |
+
+---
+
+## Уровни изоляции
+
+| Уровень | Dirty Read | Read Skew | Phantom Read | Write Skew |
+|---|---|---|---|---|
+| READ UNCOMMITTED | ✅ (PG: нет) | ✅ | ✅ | ✅ |
+| **READ COMMITTED** (PG default) | ❌ | ✅ | ✅ | ✅ |
+| REPEATABLE READ / Snapshot | ❌ | ❌ | ✅ (PG: нет) | ✅ |
+| **SERIALIZABLE** | ❌ | ❌ | ❌ | ❌ |
+
+- **READ COMMITTED:** каждый оператор видит snapshot на момент своего начала.
+- **REPEATABLE READ:** транзакция видит snapshot на момент _своего_ начала — одни и те же строки дадут одинаковый результат.
+- **SERIALIZABLE (SSI в PG):** транзакции ведут себя так, будто выполняются строго последовательно.
+
+```sql
+BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+SELECT balance FROM accounts WHERE id = 42;  -- 1000
+-- Другая транзакция: UPDATE accounts SET balance = 500 WHERE id = 42; COMMIT;
+SELECT balance FROM accounts WHERE id = 42;  -- 1000 (не 500!)
+COMMIT;
+```
+
+---
+
+## Механизмы реализации
+
+### MVCC (Multi-Version Concurrency Control)
+
+> Мантра MVCC: **читатели не блокируют писателей, писатели не блокируют читателей.**
+
+PostgreSQL хранит **несколько версий** каждого кортежа вместо блокировок на чтение:
+
+```
+Tuple:  xmin | xmax | data
+        ─────────────────────
+        100  | ∞    | v1      ← активная версия, создана транзакцией 100
+        100  | 150  | v1      ← устарела: удалена транзакцией 150
+        150  | ∞    | v2      ← новая версия
+```
+
+- **xmin** — ID транзакции, создавшей версию
+- **xmax** — ID транзакции, удалившей/обновившей версию (0 = ещё живая)
+- Читатель видит версию, если `xmin <= snapshot_xid && xmax > snapshot_xid`
+
+#### Следствие: VACUUM
+
+Устаревшие версии (dead tuples) не удаляются немедленно — нужен **VACUUM**:
+
+```sql
+VACUUM ANALYZE orders;
+-- Autovacuum работает автоматически
+-- Проблема: долгая транзакция блокирует vacuum → bloat таблицы
+```
+
+### Блокировки (Locks)
+
+Самый простой способ:
+- **Shared lock** — читающая транзакция; несколько shared-блокировок совместимы
+- **Exclusive lock** — пишущая транзакция; несовместима ни с чем
+
+### 2PL (Двухфазная блокировка)
+
+Традиционный способ обеспечения сериализуемости: если транзакция A читает данные, транзакция B должна ждать с их записью — и наоборот. Создаёт высокую конкуренцию при нагрузке.
+
+### SSI (Serializable Snapshot Isolation)
+
+Современный **оптимистичный** подход, используемый в PostgreSQL:
+1. Транзакции выполняются параллельно без жёстких блокировок.
+2. БД отслеживает зависимости между транзакциями.
+3. При обнаружении нарушения сериализуемости одна из транзакций прерывается.
 
 ---
 
@@ -50,69 +158,40 @@ CREATE INDEX idx_created ON events USING BRIN(created_at);
 -- Размер: ~1000x меньше B-Tree
 ```
 
----
-
-## ACID
-
-| Свойство | Описание | Механизм в PostgreSQL |
-|---|---|---|
-| **Atomicity** | транзакция выполняется целиком или не выполняется | WAL + rollback |
-| **Consistency** | транзакция переводит БД из одного валидного состояния в другое | constraints, triggers |
-| **Isolation** | транзакции не видят промежуточных результатов друг друга | MVCC |
-| **Durability** | зафиксированные данные не теряются при сбое | WAL fsync |
-
----
-
-## MVCC (Multi-Version Concurrency Control)
-
-PostgreSQL хранит **несколько версий** каждого кортежа вместо блокировок на чтение:
-
-```
-Tuple:  xmin | xmax | data
-        ─────────────────────
-        100  | ∞    | v1      ← активная версия, создана транзакцией 100
-        100  | 150  | v1      ← версия устарела: удалена транзакцией 150
-        150  | ∞    | v2      ← новая версия
-```
-
-- **xmin** — ID транзакции, создавшей версию
-- **xmax** — ID транзакции, удалившей/обновившей версию (0 = ещё живая)
-- Читающая транзакция видит версию, если `xmin <= snapshot_xid && xmax > snapshot_xid`
-
-### Следствие: VACUUM
-
-Устаревшие версии (dead tuples) не удаляются немедленно — нужен **VACUUM**:
+### Полезные приёмы с индексами
 
 ```sql
--- Ручной vacuum
-VACUUM ANALYZE orders;
+-- Partial index: только для подмножества данных
+CREATE INDEX idx_pending_orders ON orders (created_at)
+WHERE status = 'pending';
 
--- Autovacuum работает автоматически
--- Проблема: долгая транзакция блокирует vacuum → bloat таблицы
+-- Covering index: содержит все нужные данные (index-only scan)
+CREATE INDEX idx_orders_covering ON orders (user_id, created_at)
+INCLUDE (status, total);
+
+-- Composite: порядок важен! (user_id, status) ≠ (status, user_id)
+-- Работает для: WHERE user_id=? AND status=?
+-- Работает для: WHERE user_id=?
+-- НЕ работает для: WHERE status=?  (без leading column)
 ```
 
 ---
 
-## Уровни изоляции (ISO SQL + PostgreSQL)
+## WAL (Write-Ahead Log)
 
-| Уровень | Dirty Read | Non-Repeatable Read | Phantom Read | Serialization Anomaly |
-|---|---|---|---|---|
-| READ UNCOMMITTED | ✅ (PG: нет) | ✅ | ✅ | ✅ |
-| **READ COMMITTED** (PG default) | ❌ | ✅ | ✅ | ✅ |
-| REPEATABLE READ | ❌ | ❌ | ✅ (PG: нет) | ✅ |
-| **SERIALIZABLE** | ❌ | ❌ | ❌ | ❌ |
+Основа durability и репликации в PostgreSQL:
 
-**READ COMMITTED:** каждый оператор видит snapshot на момент своего начала.
-**REPEATABLE READ:** транзакция видит snapshot на момент своего начала.
-**SERIALIZABLE (SSI в PG):** транзакции ведут себя так, будто выполняются строго последовательно.
-
-```sql
-BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;
-SELECT balance FROM accounts WHERE id = 42;  -- 1000
--- Другая транзакция: UPDATE accounts SET balance = 500 WHERE id = 42; COMMIT;
-SELECT balance FROM accounts WHERE id = 42;  -- 1000 (не 500!)
-COMMIT;
 ```
+Транзакция:
+1. Запись изменений в WAL (sequential write = быстро)
+2. WAL fsync (гарантия durability)
+3. Обновление heap/index pages (может быть отложено)
+
+При сбое:
+- Replay WAL → heap pages восстанавливаются
+```
+
+**Репликация:** standby читает WAL от primary в режиме streaming.
 
 ---
 
@@ -151,12 +230,12 @@ Limit  (cost=... rows=100)
 
 ## Connection Pooling
 
-TCP handshake + TLS + PostgreSQL auth = ~5-10мс на новое соединение. Connection pool решает это:
+TCP handshake + TLS + PostgreSQL auth = ~5–10 мс на новое соединение. Connection pool решает это:
 
 ```go
 // pgx + pgxpool
 pool, err := pgxpool.New(ctx, dsn)
-// или конфигурация:
+
 cfg, _ := pgxpool.ParseConfig(dsn)
 cfg.MaxConns = 20
 cfg.MinConns = 5
@@ -167,8 +246,8 @@ cfg.MaxConnIdleTime = 10 * time.Minute
 **Правило размера пула:** `num_cpus * 2 + num_disks` (рекомендация pgBouncer). Слишком большой пул → конкуренция на уровне БД.
 
 **PgBouncer** — отдельный connection pooler перед PostgreSQL:
-- Transaction mode: соединение возвращается в пул после каждой транзакции
-- Session mode: соединение на всю сессию
+- **Transaction mode:** соединение возвращается в пул после каждой транзакции
+- **Session mode:** соединение на всю сессию
 
 ---
 
@@ -198,48 +277,9 @@ rows, _ := db.Query(`
 
 ---
 
-## WAL (Write-Ahead Log)
-
-Основа durability и репликации в PostgreSQL:
-
-```
-Транзакция:
-1. Запись изменений в WAL (sequential write = быстро)
-2. WAL fsync (гарантия durability)
-3. Обновление heap/index pages (может быть отложено)
-
-При сбое:
-- Replay WAL → heap pages восстанавливаются
-```
-
-**Репликация:** standby читает WAL от primary в режиме streaming.
-
----
-
-## Полезные индексы
-
-```sql
--- Partial index: только для подмножества данных
-CREATE INDEX idx_pending_orders ON orders (created_at)
-WHERE status = 'pending';
-
--- Covering index: содержит все нужные данные (index-only scan)
-CREATE INDEX idx_orders_covering ON orders (user_id, created_at)
-INCLUDE (status, total);
-
--- Composite: порядок важен! (user_id, status) ≠ (status, user_id)
--- Работает для: WHERE user_id=? AND status=?
--- Работает для: WHERE user_id=?
--- НЕ работает для: WHERE status=?  (без leading column)
-```
-
----
-
 ## Связанные темы
 
 - [[TCP]] — каждое DB-соединение = TCP соединение; handshake = latency
 - [[queues]] — Kafka vs PostgreSQL как очередь; transactional outbox pattern
 - [[resilience patterns]] — retry при DB failover, circuit breaker для медленных запросов
 - [[clean architecture]] — Repository pattern как абстракция над БД
-- [[L0 database]] — пример схемы PostgreSQL
-
