@@ -34,13 +34,198 @@ share_updated: 2026-05-26T19:18:44+03:00
 
 Уровни изоляции нужны для защиты от следующих эффектов:
 
-| Аномалия | Описание |
-|---|---|
-| **Dirty Read** | Транзакция видит незафиксированные данные другой транзакции (могут быть отменены) |
-| **Dirty Write** | Транзакция перезаписывает ещё не зафиксированные изменения другой транзакции |
-| **Read Skew** (Non-repeatable Read) | Повторное чтение тех же строк даёт другой результат из-за чужого commit между чтениями |
-| **Phantom Read** | Повторный запрос возвращает другое количество строк (INSERT от другой транзакции) |
-| **Write Skew** | Две транзакции читают одни данные, принимают решение и пишут в _разные_ объекты, нарушая инвариант. Пример: два дежурных врача одновременно берут отгул, думая, что второй останется |
+| Аномалия | Описание | Минимальный уровень защиты |
+|---|---|---|
+| **Dirty Read** | Читаем незафиксированные данные | READ COMMITTED |
+| **Dirty Write** | Перезаписываем незафиксированные данные | READ COMMITTED |
+| **Read Skew** | Повторное чтение тех же строк даёт разный результат | REPEATABLE READ |
+| **Phantom Read** | Повторный запрос возвращает новые строки | REPEATABLE READ (в PG) |
+| **Write Skew** | Читаем одно, пишем в разные объекты, нарушая инвариант | SERIALIZABLE |
+| **Lost Update** | Два concurrent UPDATE — один перезаписывает другой | REPEATABLE READ + FOR UPDATE |
+
+---
+
+### Dirty Read — чтение «грязных» данных
+
+Транзакция B читает изменения транзакции A до того, как A сделала commit. Если A откатится — B работала с несуществующими данными.
+
+```
+A: BEGIN → UPDATE balance: 1000→2000 → ... → ROLLBACK
+B:                    READ balance → 2000  ← данных, которых никогда не было
+```
+
+```sql
+-- A начала перевод, но ещё не закончила:
+BEGIN;
+UPDATE accounts SET balance = balance - 500 WHERE id = 1;  -- ещё не COMMIT
+
+-- B читает в READ UNCOMMITTED (не PG):
+SELECT balance FROM accounts WHERE id = 1;
+-- → видит уменьшенный баланс, хотя перевод может отмениться
+```
+
+**Чем опасно:** принятие решений на основе данных, которых в итоге не существовало.
+
+---
+
+### Dirty Write — запись поверх «грязных» данных
+
+Транзакция B перезаписывает изменения транзакции A, которые ещё не зафиксированы.
+
+```
+A: BEGIN → UPDATE status='processing' → ...
+B:              UPDATE status='done'  ← поверх незафиксированного A
+A:                                       ROLLBACK  ← но status уже 'done'!
+```
+
+```sql
+-- Две транзакции одновременно обновляют один заказ:
+-- A:
+BEGIN;
+UPDATE orders SET status = 'processing' WHERE id = 42;
+
+-- B (параллельно, до commit A):
+BEGIN;
+UPDATE orders SET status = 'cancelled' WHERE id = 42;
+COMMIT;  -- перезаписала незафиксированное A
+
+-- A:
+ROLLBACK;  -- откатилась, но status уже 'cancelled' от B
+```
+
+**Чем опасно:** нарушение причинно-следственной цепочки обновлений.
+
+---
+
+### Read Skew — несогласованное чтение
+
+Внутри одной транзакции одна и та же строка при повторном чтении возвращает другое значение — потому что между двумя SELECT другая транзакция сделала commit.
+
+```
+A: SELECT balance_1 → 1000 ... SELECT balance_1 → 500  ← разные значения!
+B:                      UPDATE balance_1: 1000→500; COMMIT
+```
+
+```sql
+-- A делает перевод и хочет проверить итог:
+BEGIN;  -- READ COMMITTED
+SELECT balance FROM accounts WHERE id = 1;  -- → 1000
+SELECT balance FROM accounts WHERE id = 2;  -- → 500
+
+-- B (параллельно): перевод 200 с 1 на 2; COMMIT;
+
+-- A проверяет снова (например, генерирует отчёт):
+SELECT balance FROM accounts WHERE id = 1;  -- → 800  (уже другой!)
+SELECT balance FROM accounts WHERE id = 2;  -- → 700
+-- Сумма балансов "уплыла" внутри одной транзакции A
+```
+
+**Чем опасно:** аналитика и отчёты видят несогласованный срез данных.
+**Решение:** REPEATABLE READ — снапшот фиксируется один раз на старте транзакции.
+
+---
+
+### Phantom Read — строки-«призраки»
+
+Повторный SELECT с тем же условием возвращает **другое количество строк** — потому что другая транзакция сделала INSERT или DELETE.
+
+```
+A: SELECT WHERE amount>100 → [строки 1,2,3] ... SELECT WHERE amount>100 → [1,2,3,4]
+B:                                          INSERT row4 (amount=200); COMMIT
+```
+
+```sql
+BEGIN;  -- REPEATABLE READ
+SELECT COUNT(*) FROM orders WHERE status = 'pending';  -- → 5
+
+-- B (параллельно): INSERT INTO orders(status) VALUES('pending'); COMMIT;
+
+SELECT COUNT(*) FROM orders WHERE status = 'pending';  -- → 6  ← призрак!
+COMMIT;
+```
+
+> **Отличие от Read Skew:** Read Skew — меняется значение существующей строки. Phantom Read — меняется **набор строк**, попадающих под условие.
+
+**Чем опасно:** бизнес-логика на основе `COUNT` / `EXISTS` может принять неверное решение.
+**Решение:** REPEATABLE READ (в PostgreSQL закрывает и фантомы), SERIALIZABLE.
+
+---
+
+### Write Skew — асимметрия записи
+
+Две транзакции читают **одни и те же данные**, каждая принимает решение на их основе, но **пишут в разные объекты**. По отдельности оба решения корректны — вместе нарушают инвариант.
+
+```
+Инвариант: сумма X + Y >= 0
+
+A: читает X=100, Y=100 → решает уменьшить X на 150 → X=-50  (X+Y=50 ≥ 0, ок)
+B: читает X=100, Y=100 → решает уменьшить Y на 150 → Y=-50  (X+Y=50 ≥ 0, ок)
+Итог: X=-50, Y=-50 → X+Y=-100  ← инвариант нарушен
+```
+
+```sql
+-- Инвариант: хотя бы 1 врач на дежурстве из двух
+-- A (Иван берёт отгул):
+BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+SELECT COUNT(*) FROM doctors WHERE on_duty = true;  -- → 2, можно уйти
+UPDATE doctors SET on_duty = false WHERE name = 'Иван';
+COMMIT;
+
+-- B (Мария берёт отгул, видит старый снапшот с 2 дежурными):
+BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+SELECT COUNT(*) FROM doctors WHERE on_duty = true;  -- → 2 (снапшот до A!)
+UPDATE doctors SET on_duty = false WHERE name = 'Мария';
+COMMIT;  -- никто не дежурит — инвариант сломан
+```
+
+**Отличие от Dirty Write:** при Write Skew обе транзакции пишут в **разные строки** — конфликта на уровне строки нет, поэтому стандартные блокировки не помогают.
+**Решение:** SERIALIZABLE (SSI) или явная блокировка `SELECT ... FOR UPDATE` на все читаемые строки.
+
+---
+
+### Lost Update — потерянное обновление
+
+Две транзакции читают значение, модифицируют его и пишут обратно. Один из результатов молча перезаписывает другой.
+
+```
+A: READ x=10 → x+1=11 → WRITE x=11
+B: READ x=10 → x+5=15 → WRITE x=15  ← результат A потерян, итог должен быть 16
+```
+
+```sql
+-- Оба пользователя одновременно пополняют счёт:
+-- A:
+BEGIN;
+SELECT balance FROM accounts WHERE id = 1;  -- → 100
+-- вычисляет 100 + 50 = 150
+
+-- B (параллельно):
+BEGIN;
+SELECT balance FROM accounts WHERE id = 1;  -- → 100
+-- вычисляет 100 + 30 = 130
+UPDATE accounts SET balance = 130 WHERE id = 1;
+COMMIT;
+
+-- A продолжает (не знает о B):
+UPDATE accounts SET balance = 150 WHERE id = 1;  -- перезаписывает 130!
+COMMIT;
+-- Итог: 150, а должно быть 180
+```
+
+**Решение 1 — атомарный UPDATE:**
+```sql
+UPDATE accounts SET balance = balance + 50 WHERE id = 1;
+-- БД сама читает и пишет атомарно, без race condition
+```
+
+**Решение 2 — явная блокировка строки:**
+```sql
+BEGIN;
+SELECT balance FROM accounts WHERE id = 1 FOR UPDATE;  -- блокирует строку
+-- B будет ждать здесь до COMMIT транзакции A
+UPDATE accounts SET balance = balance + 50 WHERE id = 1;
+COMMIT;
+```
 
 ---
 
