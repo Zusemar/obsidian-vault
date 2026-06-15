@@ -208,6 +208,9 @@
   },
   "active": "21d25b6079e6fc76",
   "lastOpenFiles": [
+    "Pasted image 20260616023521.png",
+    "Pasted image 20260616023026.png",
+    "Pasted image 20260616022918.png",
     "инфраструктура/databases.md",
     "стат.md",
     "golang/go map.md",
@@ -234,7 +237,6 @@
     "golang/go SOLID.md",
     "golang/go slices.md",
     "golang/go scheduler.md",
-    "golang/go RWMutex.md",
     "golang/sync",
     "Untitled",
     "golang",
