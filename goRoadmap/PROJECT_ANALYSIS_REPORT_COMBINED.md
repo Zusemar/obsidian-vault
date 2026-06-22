@@ -1,3 +1,7 @@
+---
+share_link: https://share.note.sx/diu2wl4j#v66VFCLyzOkZXjp6avrHPdxAmai/VzCDsdIYHcXd1zQ
+share_updated: 2026-06-22T18:12:44+03:00
+---
 # Сводный отчет по проекту распознавания показаний тонометра
 
 Дата объединения: 2026-06-22.  
