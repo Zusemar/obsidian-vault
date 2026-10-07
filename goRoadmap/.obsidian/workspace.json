@@ -65,12 +65,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "golang/go RWMutex.md",
+                "file": "golang/sync/sync.Map.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "go RWMutex"
+              "title": "sync.Map"
             }
           }
         ],
@@ -237,6 +237,10 @@
   },
   "active": "cf94210f4f9d13ac",
   "lastOpenFiles": [
+    "golang/sync/sync.Once.md",
+    "golang/sync/sync.Map.md",
+    "golang/sync/sync errgroup.md",
+    "golang/go RWMutex.md",
     "golang/go Mutex.md",
     "golang/go scheduler.md",
     "golang/go netpoller.md",
@@ -246,7 +250,6 @@
     "golang/go philosophy.md",
     "контесты/l2.md",
     "Без названия.md",
-    "golang/go RWMutex.md",
     "memory/project_vault_structure.md",
     "z cv/PROJECT_ANALYSIS_REPORT_COMBINED.md",
     "контесты",
@@ -265,11 +268,8 @@
     "Pasted image 20260616023026.png",
     "golang/go map.md",
     "golang/go memory model.md",
-    "golang/sync/sync.Once.md",
-    "golang/sync/sync.Map.md",
     "golang/sync/sync atomic (атомики).md",
     "инфраструктура/queues.md",
-    "инфраструктура/resilience patterns.md",
     "golang/sync",
     "Untitled",
     "golang",
