@@ -237,10 +237,10 @@
   },
   "active": "cf94210f4f9d13ac",
   "lastOpenFiles": [
-    "golang/go goroutine.md",
-    "golang/go Interfaces.md",
-    "golang/go scheduler.md",
     "golang/go netpoller.md",
+    "golang/go goroutine.md",
+    "golang/go scheduler.md",
+    "golang/go Interfaces.md",
     "golang/go SOLID.md",
     "golang/go philosophy.md",
     "контесты/l2.md",
