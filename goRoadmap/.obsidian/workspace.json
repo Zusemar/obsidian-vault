@@ -65,12 +65,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "golang/go scheduler.md",
+                "file": "golang/go Mutex.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "go scheduler"
+              "title": "go Mutex"
             }
           }
         ],
@@ -237,9 +237,9 @@
   },
   "active": "cf94210f4f9d13ac",
   "lastOpenFiles": [
+    "golang/go scheduler.md",
     "golang/go netpoller.md",
     "golang/go goroutine.md",
-    "golang/go scheduler.md",
     "golang/go Interfaces.md",
     "golang/go SOLID.md",
     "golang/go philosophy.md",
