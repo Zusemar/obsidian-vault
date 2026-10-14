@@ -65,12 +65,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "golang/sync/sync.Map.md",
+                "file": "golang/go Channel.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "sync.Map"
+              "title": "go Channel"
             }
           }
         ],
@@ -237,8 +237,8 @@
   },
   "active": "cf94210f4f9d13ac",
   "lastOpenFiles": [
-    "golang/sync/sync.Once.md",
     "golang/sync/sync.Map.md",
+    "golang/sync/sync.Once.md",
     "golang/sync/sync errgroup.md",
     "golang/go RWMutex.md",
     "golang/go Mutex.md",
