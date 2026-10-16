@@ -93,12 +93,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "golang/sync/sync atomic (атомики).md",
+                "file": "golang/sync/sync RWMutex.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "sync atomic (атомики)"
+              "title": "sync RWMutex"
             }
           }
         ],
@@ -265,6 +265,7 @@
   },
   "active": "7cf25159fb1ee7dd",
   "lastOpenFiles": [
+    "golang/sync/sync atomic (атомики).md",
     "golang/sync/sync Mutex.md",
     "golang/sync/sync errgroup.md",
     "api/gRPC.md",
@@ -273,7 +274,6 @@
     "golang/sync/sync package.md",
     "golang/sync/sync WaitGroup.md",
     "golang/sync/sync RWMutex.md",
-    "golang/sync/sync atomic (атомики).md",
     "golang/go Channel.md",
     "инфраструктура/databases.md",
     "контесты/l2.md",
