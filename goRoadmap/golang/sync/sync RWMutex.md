@@ -133,7 +133,7 @@ func (rw *RWMutex) Lock() {
 }
 ```
 
-**(1)** `w.Lock()` — сериализует писателей. Только один пройдёт дальше. → [[go Mutex]]
+**(1)** `w.Lock()` — сериализует писателей. Только один пройдёт дальше. → [[sync Mutex]]
 
 **(2)** Вычитаем `1<<30` из `readerCount` — анонс писателя. Новые `RLock` заблокируются. Восстанавливаем реальное число уже активных читателей:
 ```
@@ -302,11 +302,11 @@ mu.Lock() // дедлок — Lock ждёт когда RLock уйдёт, но RL
 
 ## Связанные темы
 
-- [[go Mutex]] — используется внутри RWMutex для сериализации писателей; сравнение fast/slow path
+- [[sync Mutex]] — используется внутри RWMutex для сериализации писателей; сравнение fast/slow path
 - [[sync package]] — обзор всего пакета sync: Once, Cond, WaitGroup, Pool
 - [[sync atomic (атомики)]] — атомики на которых строится readerCount / readerWait
 - [[go memory model]] — happens-before гарантии RWMutex, видимость записей после Unlock
-- [[go WaitGroup]] — другой примитив sync, ожидание группы горутин
+- [[sync WaitGroup]] — другой примитив sync, ожидание группы горутин
 - [[sync.Map]] — concurrent map; альтернатива `map + RWMutex` при read-heavy нагрузке
 - [[sync.Pool]] — переиспользование объектов без блокировок
 - [[go scheduler]] — GMP, gopark/goready, почему runtime.rwmutex не может использовать gopark

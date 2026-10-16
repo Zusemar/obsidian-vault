@@ -65,12 +65,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "golang/sync/go RWMutex.md",
+                "file": "golang/sync/sync RWMutex.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "go RWMutex"
+              "title": "sync RWMutex"
             }
           },
           {
@@ -79,12 +79,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "golang/sync/go RWMutex.md",
+                "file": "golang/sync/sync RWMutex.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "go RWMutex"
+              "title": "sync RWMutex"
             }
           },
           {
@@ -93,12 +93,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "golang/sync/sync errgroup.md",
+                "file": "golang/sync/sync atomic (атомики).md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "sync errgroup"
+              "title": "sync atomic (атомики)"
             }
           }
         ],
@@ -265,14 +265,14 @@
   },
   "active": "7cf25159fb1ee7dd",
   "lastOpenFiles": [
+    "golang/sync/sync Mutex.md",
+    "golang/sync/sync errgroup.md",
     "api/gRPC.md",
     "api/REST.md",
     "api/protobuf.md",
     "golang/sync/sync package.md",
-    "golang/sync/sync errgroup.md",
-    "golang/sync/go WaitGroup.md",
-    "golang/sync/go RWMutex.md",
-    "golang/sync/go Mutex.md",
+    "golang/sync/sync WaitGroup.md",
+    "golang/sync/sync RWMutex.md",
     "golang/sync/sync atomic (атомики).md",
     "golang/go Channel.md",
     "инфраструктура/databases.md",

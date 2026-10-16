@@ -211,8 +211,8 @@ type error interface {
 - [[sync atomic (атомики)]] — атомарные операции, memory ordering
 - [[sync.Map]] — concurrent map, когда использовать
 - [[sync.Pool]] — переиспользование объектов, GC interaction
-- [[go WaitGroup]] — ожидание группы goroutine
-- [[go Mutex]] — mutual exclusion, deadlock
+- [[sync WaitGroup]] — ожидание группы goroutine
+- [[sync Mutex]] — mutual exclusion, deadlock
 - [[go concurrency patterns]] — fan-out/in, pipeline, worker pool
 - [[go netpoller]] — неблокирующий I/O, epoll/kqueue интеграция
 

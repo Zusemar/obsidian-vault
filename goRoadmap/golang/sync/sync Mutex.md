@@ -175,7 +175,7 @@ Unlock → runtime_Semrelease(&m.sema):
     → goready(g) — горутина возвращается в run queue
 ```
 
-Тот же `semtable` используется в [[go WaitGroup]] (`runtime_SemacquireWaitGroup`) и [[go Channel]] — механика парковки единая для всего пакета `sync`.
+Тот же `semtable` используется в [[sync WaitGroup]] (`runtime_SemacquireWaitGroup`) и [[go Channel]] — механика парковки единая для всего пакета `sync`.
 
 ---
 
@@ -190,7 +190,7 @@ Unlock → runtime_Semrelease(&m.sema):
 ## Связанные темы
 
 - [[sync package]] — `RWMutex`, `Once`, `Cond` строятся поверх тех же примитивов
-- [[go WaitGroup]] — использует тот же `semtable`; `handoff=true` vs `handoff=false`
+- [[sync WaitGroup]] — использует тот же `semtable`; `handoff=true` vs `handoff=false`
 - [[go Channel]] — `sudog` и `gopark`/`goready` — общая механика с мьютексом
 - [[go scheduler]] — `gopark` снимает горутину с M; `goready` возвращает в run queue
 - [[go goroutine]] — статусы горутины: `_Grunning` → `_Gwaiting` → `_Grunnable`
