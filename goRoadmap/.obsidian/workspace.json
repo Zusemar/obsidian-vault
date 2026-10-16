@@ -65,12 +65,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "golang/sync/sync package.md",
+                "file": "golang/sync/sync errgroup.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "sync package"
+              "title": "sync errgroup"
             }
           }
         ],
@@ -237,8 +237,9 @@
   },
   "active": "cf94210f4f9d13ac",
   "lastOpenFiles": [
-    "golang/sync/sync errgroup.md",
     "golang/sync/sync atomic (атомики).md",
+    "golang/sync/sync package.md",
+    "golang/sync/sync errgroup.md",
     "golang/go Channel.md",
     "инфраструктура/databases.md",
     "контесты/l2.md",
@@ -269,7 +270,6 @@
     "Pasted image 20260616023521.png",
     "Pasted image 20260616023026.png",
     "golang/go map.md",
-    "golang/go memory model.md",
     "golang/sync",
     "Untitled",
     "golang",
