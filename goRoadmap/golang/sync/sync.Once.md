@@ -1,77 +1,36 @@
-# sync.Once — однократное выполнение функции
+---
+tags: [golang, sync, internals]
+go: go1.27.3
+verified: 2026-10-21
+---
 
-`sync.Once` — это примитив синхронизации из стандартной библиотеки Go, который гарантирует, что переданная функция выполнится **ровно один раз**, даже при конкурентных вызовах из множества [[go goroutine]]
+# sync.Once — проверено по Go 1.27.3
 
-## Когда нужен Once
-- Ленивая инициализация синглтона.
-- Однократная настройка ресурса (подключение к БД, чтение конфига, инициализация логгера).
-- Выполнение действия, которое должно произойти только при первом обращении.
+Обновлено по официальному архиву Go 1.27.3. Полный маршрут: [[Лекция — sync Go 1.27 — 90 минут]]. Внутреннее устройство относится к этому выпуску; контракт отмечен отдельно.
 
-## Простой пример
-```go
-package main
+## Once: «один начал» не означает «все дождались»
 
-import (
-    "fmt"
-    "sync"
-)
+### Ломаем наивный CAS
 
-var once sync.Once
+В [Once.Do](https://github.com/golang/go/blob/go1.27.3/src/sync/once.go#L32-L71) авторы сами показывают неправильную идею: победитель ставит done через CAS, затем выполняет f. Горутина B, увидев done, немедленно вернётся, хотя A ещё инициализирует состояние. Значит, «ровно один исполнитель» не выполняет полного контракта Once — остальные должны дождаться завершения и получить видимость результата.
 
-func main() {
-    for i := 0; i < 10; i++ {
-        go once.Do(func() {
-            fmt.Println("Выполнюсь только один раз")
-        })
-    }
-    // Вывод: "Выполнюсь только один раз" (один раз)
-}
-```
+Правильная реализация: быстрый `done.Load`; при false — [doSlow](https://github.com/golang/go/blob/go1.27.3/src/sync/once.go#L73-L80), mutex, повторная проверка done, вызов f, отложенная публикация done. Повторная проверка обязательна: B могла пройти первый Load до завершения A, а mutex получить уже после него. Поле done стоит первым для компактности горячего пути на некоторых архитектурах; этот мотив прямо записан в [комментарии к структуре](https://github.com/golang/go/blob/go1.27.3/src/sync/once.go#L11-L31).
 
-### Структура
+### Порядок defer объясняет panic
 
-```go
-type Once struct {
-	_ noCopy
+В `doSlow` сначала зарегистрирован `defer m.Unlock()`, затем `defer done.Store(true)`. Defer выполняются в обратном порядке: сначала публикация завершения, затем Unlock. При panic раскрутка тоже выполнит Store. Поэтому будущий `Do` **не повторяет f после паники**. Это исправление противоречия в вашей заметке `sync.Once.md`; см. [doSlow](https://github.com/golang/go/blob/go1.27.3/src/sync/once.go#L73-L80) и [документированную семантику panic](https://github.com/golang/go/blob/go1.27.3/src/sync/once.go#L32-L71).
 
-	// done indicates whether the action has been performed.
-	// It is first in the struct because it is used in the hot path.
-	// The hot path is inlined at every call site.
-	// Placing done first allows more compact instructions on some architectures (amd64/386),
-	// and fewer instructions (to calculate offset) on other architectures.
-	done atomic.Bool
-	m    Mutex
-}
+Рекурсивный `Do` на том же Once зависнет: внешний вызов удерживает mutex до окончания f, а внутренний пытается получить его. Это не рекурсивный lock и не механизм повторных попыток инициализации. Ограничение описано в [комментарии Do](https://github.com/golang/go/blob/go1.27.3/src/sync/once.go#L32-L71).
 
-func (o *Once) Do(f func()) {
-	// Note: Here is an incorrect implementation of Do:
-	//
-	//	if o.done.CompareAndSwap(false, true) {
-	//		f()
-	//	}
-	//
-	// Do guarantees that when it returns, f has finished.
-	// This implementation would not implement that guarantee:
-	// given two simultaneous calls, the winner of the cas would
-	// call f, and the second would return immediately, without
-	// waiting for the first's call to f to complete.
-	// This is why the slow path falls back to a mutex, and why
-	// the o.done.Store must be delayed until after f returns.
+`OnceValue` и `OnceValues` добавляют результат и кэширование ошибки как результата, если f возвращает error; успешное завершение не означает, что error nil. В отличие от прямого `Once.Do`, фабрики при панике воспроизводят panic с тем же значением **на каждом вызове**. Посмотрите поля `valid`, `p`, `result` и проверки после `once.Do` в [OnceValue](https://github.com/golang/go/blob/go1.27.3/src/sync/oncefunc.go#L42-L74) и [OnceValues](https://github.com/golang/go/blob/go1.27.3/src/sync/oncefunc.go#L76-L109).
 
-	if !o.done.Load() {
-		// Outlined slow-path to allow inlining of the fast-path.
-		o.doSlow(f)
-	}
-}
+### Мини-эксперимент
 
-func (o *Once) doSlow(f func()) {
-	o.m.Lock()
-	defer o.m.Unlock()
-	if !o.done.Load() {
-		defer o.done.Store(true)
-		f()
-	}
-}
-```
+В примере Once из приложения C1 отдельной лекции каждый вызов обёрнут в recover только для наблюдения. Ожидаем: для прямого Once функция запускается один раз, первый вызов паникует, второй нормально возвращается; для OnceValue функция также запускается один раз, оба обращения паникуют. Recover в демонстрации нужен, чтобы процесс дошёл до второй попытки. Сравниваем результат с [Store в defer](https://github.com/golang/go/blob/go1.27.3/src/sync/once.go#L73-L80) и [повторным panic](https://github.com/golang/go/blob/go1.27.3/src/sync/oncefunc.go#L42-L74).
 
-Если переданная функция `f` запаниковала, `Once` **не** выставит флаг `done`. При следующем вызове `Do` функция запустится снова.
+**Вопрос:** возвращённый `*Config` из OnceValue можно безусловно мутировать конкурентно? **Ответ:** нет, Once синхронизирует инициализацию; последующие мутации требуют собственного протокола. Контракт ограничен завершением f: [Once](https://github.com/golang/go/blob/go1.27.3/src/sync/once.go#L11-L31).
+
+
+## Связанные заметки
+
+[[sync Mutex]], [[sync RWMutex]], [[sync WaitGroup]], [[sync.Cond]], [[sync.Map]], [[sync.Pool]], [[sync atomic (атомики)]], [[sync errgroup]]
