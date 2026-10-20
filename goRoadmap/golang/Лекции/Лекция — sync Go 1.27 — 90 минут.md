@@ -27,9 +27,14 @@ verified: 2026-10-21
 | 82–87 | Pool | Прослеживаем Get, pin и очистку GC |
 | 87–90 | Контрольный разбор | Восстанавливаем три инварианта без подсказки |
 
+> [!tip] Исполняемые примеры
+> Сноски рядом с объяснениями ведут к разделу «Приложение E». Раскройте пример и нажмите **Run** в режиме чтения. Каждый блок `run-go` — полная отдельная программа с `package main`; фрагменты исходников в обычных блоках предназначены для чтения. Нужны плагин [Execute Code](https://github.com/twibiral/obsidian-execute-code) и Go 1.27.x. Выполнение начинается только по кнопке.
+
 ## 1. 00–07. Начинаем с контракта и атомарной публикации
 
 ### 00–02. Что именно мы должны доказать
+
+Исполняемый пример и разбор результата.[^exec-happens-before]
 
 Попросите назвать две разные задачи синхронизации: исключить одновременное нарушение инварианта и сделать результаты одной горутины видимыми другой. Для `Mutex` контракт говорит: n-й `Unlock` synchronizes-before m-го `Lock` при `n < m`. Успешный `TryLock` равен `Lock` по этому отношению, проваленный не даёт отношения синхронизации. Откройте [комментарии публичного Mutex](https://github.com/golang/go/blob/go1.27.3/src/sync/mutex.go#L1-L66) и [раздел Locks модели памяти](https://go.dev/ref/mem#Locks).
 
@@ -48,6 +53,8 @@ mu.Unlock()
 Цепочка доказательства: запись `x` → порядок внутри первой горутины → `Unlock` → synchronizes-before → успешный `Lock` → чтение `x`. Именно цепочка, а не прошедшее время, объясняет видимость. Data race — конфликтующие обычные доступы, не упорядоченные happens-before; в Go нельзя автоматически переносить на них модель «любое поведение допустимо» из C++. Точные ограничения приведены в [Memory model: data races](https://go.dev/ref/mem#restrictions).
 
 ### 02–05. Атомики — строительные блоки, а не готовая транзакция
+
+Исполняемый пример и разбор результата.[^exec-atomic]
 
 Прочитайте [контракт sync/atomic](https://github.com/golang/go/blob/go1.27.3/src/sync/atomic/doc.go#L1-L222): операции выглядят выполненными в едином последовательно согласованном порядке; если B наблюдает эффект A, A synchronizes-before B. В API нет пользовательского выбора `relaxed`/`acquire`/`release`. Из этого не следует, что две отдельные атомарные записи образуют один неделимый снимок.
 
@@ -87,6 +94,8 @@ func read() *Config { return current.Load() }
 
 ### 09–13. Главная трассировка: release между проверкой и сном
 
+Исполняемый пример и разбор результата.[^exec-semaphore]
+
 Откройте [semacquire1](https://github.com/golang/go/blob/go1.27.3/src/runtime/sema.go#L146-L201) и [semrelease1](https://github.com/golang/go/blob/go1.27.3/src/runtime/sema.go#L207-L289) рядом. У acquire есть быстрый `cansemacquire`, а затем медленный путь: взять root lock, увеличить `nwait`, ещё раз попытаться забрать токен, поставить `sudog` в очередь и вызвать `goparkunlock`. У release увеличение токена стоит **до** проверки `nwait`.
 
 | Момент release | Почему acquire не уснёт навсегда |
@@ -125,6 +134,8 @@ state, младшие биты:
 Для ручной трассировки нормального режима: `0` — свободен; `1` — locked; `9 = 1 + 8` — locked и один учтённый waiter; `17 = 1 + 2*8` — locked и два waiter. Флаг woken не обозначает владельца: он координирует пробуждение, чтобы не будить лишних претендентов. В спине его тоже может выставить активная горутина. Читать [выставление mutexWoken](https://github.com/golang/go/blob/go1.27.3/src/internal/sync/mutex.go#L95-L182).
 
 ### 18–20. Fast path: что доказывает CAS
+
+Исполняемый пример и разбор результата.[^exec-mutex]
 
 [Lock](https://github.com/golang/go/blob/go1.27.3/src/internal/sync/mutex.go#L58-L71) сначала пытается `CompareAndSwapInt32(&m.state, 0, mutexLocked)`. Успех означает, что горутина захватила полностью свободное состояние. Сбой означает только, что состояние не было нулём в момент CAS; дальше вызывается вынесенный `lockSlow`. Комментарий связывает разделение с возможностью инлайнинга быстрого пути.
 
@@ -176,6 +187,8 @@ Starvation меняет протокол: новые горутины не за�
 
 ### 38–42. Трассировка, включая неприятное окно
 
+Исполняемый пример и разбор результата.[^exec-rwmutex]
+
 Обозначим `B = 1<<30`. Два активных читателя дают `readerCount=2`. W захватывает `w`, делает `Add(-B)` и запоминает `r=2`. Новый читатель C увеличивает счётчик до `-B+3` и паркуется. Два старых читателя уйдут; после писательского `Unlock` восстановленное значение будет учитывать ожидающего C, которого нужно выпустить. Проверяем каждую операцию по [Lock](https://github.com/golang/go/blob/go1.27.3/src/sync/rwmutex.go#L141-L162), [RUnlock](https://github.com/golang/go/blob/go1.27.3/src/sync/rwmutex.go#L110-L127), [Unlock](https://github.com/golang/go/blob/go1.27.3/src/sync/rwmutex.go#L195-L223).
 
 Теперь остановите W **между** вычитанием B и `readerWait.Add(r)`. Если оба старых читателя уже сделали `RUnlock`, `readerWait` успеет стать `-2`. Прибавление `r=2` вернёт ноль: W не должен парковаться. Если ушёл один, получится положительный остаток, второй разбудит W. Отрицательный `readerWait` в этом промежутке — часть протокола, а не обязательно повреждение. Читать [проверку результата Add(r)](https://github.com/golang/go/blob/go1.27.3/src/sync/rwmutex.go#L141-L162) и [decrement уходящих читателей](https://github.com/golang/go/blob/go1.27.3/src/sync/rwmutex.go#L129-L139).
@@ -215,6 +228,8 @@ fmt.Println(results)
 В `state atomic.Uint64` старшие 32 бита — signed task counter, бит 31 младшей половины — `synctest` bubble flag, младшие 31 бит — waiter count. Формулу сверяйте с `v := int32(state >> 32)` и `w := uint32(state & 0x7fffffff)` в [Add](https://github.com/golang/go/blob/go1.27.3/src/sync/waitgroup.go#L62-L144). Старое «нижние 32 бита целиком waiters» для этой версии неверно.
 
 ### 48–51. Гонка Wait с последним Done
+
+Исполняемый пример и разбор результата.[^exec-waitgroup]
 
 [Wait](https://github.com/golang/go/blob/go1.27.3/src/sync/waitgroup.go#L159-L218) сначала загружает всё состояние. Если counter равен нулю, возвращается; иначе CAS увеличивает waiter count. [Done](https://github.com/golang/go/blob/go1.27.3/src/sync/waitgroup.go#L146-L157) вызывает Add(-1); тот, кто переводит counter в ноль при наличии waiters, проверяет state, сбрасывает его и вызывает release нужное число раз. Один packed CAS связывает проверку «задачи ещё есть» с регистрацией ожидающего.
 
@@ -261,6 +276,8 @@ wg.Wait()
 
 ### 61–63. Мини-эксперимент
 
+Исполняемый пример и разбор результата.[^exec-once]
+
 В примере Once из приложения C1 каждый вызов обёрнут в recover только для наблюдения. Ожидаем: для прямого Once функция запускается один раз, первый вызов паникует, второй нормально возвращается; для OnceValue функция также запускается один раз, оба обращения паникуют. Recover в демонстрации нужен, чтобы процесс дошёл до второй попытки. Сравниваем результат с [Store в defer](https://github.com/golang/go/blob/go1.27.3/src/sync/once.go#L73-L80) и [повторным panic](https://github.com/golang/go/blob/go1.27.3/src/sync/oncefunc.go#L42-L74).
 
 **Вопрос:** возвращённый `*Config` из OnceValue можно безусловно мутировать конкурентно? **Ответ:** нет, Once синхронизирует инициализацию; последующие мутации требуют собственного протокола. Контракт ограничен завершением f: [Once](https://github.com/golang/go/blob/go1.27.3/src/sync/once.go#L11-L31).
@@ -274,6 +291,8 @@ wg.Wait()
 Это не означает, что Unlock и физическая парковка — одна машинная инструкция. Атомарность здесь — свойство протокола относительно уведомлений: если Signal случится после выдачи билета, но до парковки, notify уже пройдёт билет, и `notifyListWait` вернётся без сна. Это видно в [проверке less(t, l.notify)](https://github.com/golang/go/blob/go1.27.3/src/runtime/sema.go#L584-L626).
 
 ### 66–69. Почему цикл нужен без spurious wakeup
+
+Исполняемый пример и разбор результата.[^exec-cond]
 
 В Go Wait не возвращается без Signal/Broadcast — это прямо гарантировано в [документации Wait](https://github.com/golang/go/blob/go1.27.3/src/sync/cond.go#L52-L73). Поэтому объяснение «for нужен из-за spurious wakeups как в pthreads» для Go неверно. Но уведомление не резервирует ресурс за разбуженным: пока тот заново захватывает L, другой потребитель мог уже забрать элемент.
 
@@ -326,6 +345,8 @@ Signal допустим без удержания L; это не разреше�
 
 ### 77–80. Что конкурентная Map не делает за нас
 
+Исполняемый пример и разбор результата.[^exec-map]
+
 `Load` + вычисление + `Store` — не атомарный increment. Два потока могут загрузить 0 и оба записать 1. В примере Map из приложения C1 каналы специально заставляют обе G прочитать до любой записи; итог будет 1 при отсутствии data race самой Map. Это логическая потеря обновления, не свидетельство неисправности concurrent map. Для одного ключа нужен CompareAndSwap-loop с корректной обработкой отсутствия ключа либо отдельный atomic-счётчик; для составного инварианта — общий lock. Границы операций описаны в [перечне read/write операций](https://github.com/golang/go/blob/go1.27.3/src/sync/map.go#L11-L43) и [CompareAndSwap](https://github.com/golang/go/blob/go1.27.3/src/sync/map.go#L86-L91).
 
 `LoadOrStore(k, expensive())` не делает вычисление ленивым: аргумент вычисляется до вызова. Если нужно не более одной инициализации на ключ, можно хранить фабрику `OnceValue` и вызывать фактически выбранную фабрику после LoadOrStore; несколько фабрик могут быть созданы, но работа должна запускаться только через сохранённую. Это композиция двух контрактов, а не дополнительное обещание Map. Основание: [LoadOrStore](https://github.com/golang/go/blob/go1.27.3/src/sync/map.go#L61-L66), [OnceValue](https://github.com/golang/go/blob/go1.27.3/src/sync/oncefunc.go#L42-L74) и [порядок вычисления вызова](https://go.dev/ref/spec#Calls).
@@ -341,6 +362,8 @@ Signal допустим без удержания L; это не разреше�
 ## 9. 82–87. Pool: локальность P и право забыть объект
 
 ### 82–84. Путь Get
+
+Исполняемый пример и разбор результата.[^exec-pool]
 
 У Pool нет гарантии хранения: Get может считать пул пустым, а элементы могут быть удалены без уведомления. Публикация `Put(x)` упорядочена с Get, вернувшим **тот же x**, но не означает, что следующий Get обязан его вернуть. Начните с [контракта Pool](https://github.com/golang/go/blob/go1.27.3/src/sync/pool.go#L15-L67).
 
@@ -421,7 +444,7 @@ GC может сохранять адресуемый объект живым, �
 
 #### Once: паника и повторное обращение
 
-```go
+```run-go
 package main
 
 import (
@@ -471,7 +494,7 @@ func main() {
 
 #### Map: потеря обновления без data race
 
-```go
+```run-go
 package main
 
 import (
@@ -507,7 +530,7 @@ func main() {
 
 #### WaitGroup: видимость результатов после Wait
 
-```go
+```run-go
 package main
 
 import (
@@ -641,3 +664,342 @@ go tool pprof mutex.out
 | `err.limit` | [reference/errgroup-v0.17.0.go:134](https://github.com/golang/sync/blob/v0.17.0/errgroup/errgroup.go#L134-L151) |
 | `err.try` | [reference/errgroup-v0.17.0.go:104](https://github.com/golang/sync/blob/v0.17.0/errgroup/errgroup.go#L104-L132) |
 
+
+## Приложение E. Исполняемые примеры к сноскам
+
+Все программы используют только стандартную библиотеку. Для ручного запуска сохраните блок в main.go и выполните `go run -race main.go` на Go 1.27.x. Ожидаемый вывод дан в комментариях. Проверки выполняются без Sleep и без предположений о порядке запуска G.
+
+### E1. Публикация через Mutex
+
+Сигнал started отправлен до записи x. Публикацию самой записи обеспечивает Unlock → Lock, а не ожидание канала. Источник: [код Go 1.27.3](https://github.com/golang/go/blob/go1.27.3/src/sync/mutex.go#L1-L66).
+
+> [!example]- Запустить: Публикация через Mutex
+>
+> ```run-go
+> package main
+> import ("fmt"; "sync")
+> func main() {
+>  var mu sync.Mutex
+>  var x int
+>  started := make(chan struct{})
+>  go func() {
+>   mu.Lock()
+>   close(started) // Только регистрация начала; x ещё не записан.
+>   x = 42
+>   mu.Unlock()
+>  }()
+>  <-started
+>  mu.Lock() // Дождётся Unlock писателя.
+>  fmt.Println(x)
+>  mu.Unlock()
+> }
+> // Ожидается: 42.
+> ```
+
+### E2. Публикация immutable Config через atomic.Pointer
+
+Объект полностью создан до Store и не меняется после него. Уберите неизменяемость — атомарный указатель сам по себе не защитит поля. Источник: [код Go 1.27.3](https://github.com/golang/go/blob/go1.27.3/src/sync/atomic/type.go#L44-L70).
+
+> [!example]- Запустить: Публикация immutable Config через atomic.Pointer
+>
+> ```run-go
+> package main
+> import ("fmt"; "runtime"; "sync/atomic")
+> type Config struct { Endpoint string; Limit int }
+> func main() {
+>  var current atomic.Pointer[Config]
+>  go func() {
+>   current.Store(&Config{Endpoint: "internal", Limit: 8})
+>  }()
+>  for {
+>   c := current.Load()
+>   if c != nil {
+>    fmt.Println(c.Endpoint, c.Limit)
+>    return
+>   }
+>   runtime.Gosched() // Уступаем CPU; это не публикация памяти.
+>  }
+> }
+> // Ожидается: internal 8.
+> ```
+
+### E3. Release до начала ожидания — модель токена
+
+Это учебная модель токена на буферизированном канале, а не код semacquire1. В runtime потерянное пробуждение закрывают счётчик токенов, регистрация nwait и повторная проверка под root lock. Источник: [код Go 1.27.3](https://github.com/golang/go/blob/go1.27.3/src/runtime/sema.go#L146-L201).
+
+> [!example]- Запустить: Release до начала ожидания — модель токена
+>
+> ```run-go
+> package main
+> import "fmt"
+> func main() {
+>  token := make(chan struct{}, 1)
+>  token <- struct{}{} // Выпускаем токен раньше acquire.
+>  <-token            // Ожидание не блокируется: токен сохранён.
+>  fmt.Println("token acquired")
+> }
+> // Ожидается: token acquired.
+> ```
+
+### E4. Составной инвариант под Mutex
+
+Одна критическая секция меняет связанные поля count и sum. Отдельные атомарные записи не сделали бы проверку пары транзакцией. Источник: [код Go 1.27.3](https://github.com/golang/go/blob/go1.27.3/src/internal/sync/mutex.go#L58-L71).
+
+> [!example]- Запустить: Составной инвариант под Mutex
+>
+> ```run-go
+> package main
+> import ("fmt"; "sync")
+> func main() {
+>  var mu sync.Mutex
+>  var wg sync.WaitGroup
+>  var count, sum int
+>  for range 4 {
+>   wg.Go(func() {
+>    for range 1000 {
+>     mu.Lock()
+>     count++
+>     sum += 2
+>     if sum != 2*count { panic("broken invariant") }
+>     mu.Unlock()
+>    }
+>   })
+>  }
+>  wg.Wait()
+>  fmt.Println(count, sum)
+> }
+> // Ожидается: 4000 8000.
+> ```
+
+### E5. Писатель закрывает вход новым читателям
+
+Здесь TryRLock используется только как учебное наблюдение входных ворот. В прикладном коде такой spin-loop обычно заменяют явным протоколом ожидания. Источник: [код Go 1.27.3](https://github.com/golang/go/blob/go1.27.3/src/sync/rwmutex.go#L141-L162).
+
+> [!example]- Запустить: Писатель закрывает вход новым читателям
+>
+> ```run-go
+> package main
+> import ("fmt"; "runtime"; "sync")
+> func main() {
+>  var rw sync.RWMutex
+>  var wg sync.WaitGroup
+>  value := 0
+>  rw.RLock() // Старый читатель пока не даёт писателю войти.
+>  wg.Go(func() {
+>   rw.Lock()
+>   value = 42
+>   rw.Unlock()
+>  })
+>  for rw.TryRLock() {
+>   rw.RUnlock() // Освобождаем только дополнительный пробный RLock.
+>   runtime.Gosched()
+>  }
+>  fmt.Println("new readers blocked")
+>  rw.RUnlock() // Уходит старый читатель, писатель сможет продолжить.
+>  wg.Wait()
+>  rw.RLock()
+>  fmt.Println(value)
+>  rw.RUnlock()
+> }
+> // Ожидается:
+> // new readers blocked
+> // 42
+> ```
+
+### E6. WaitGroup.Go: результаты после Wait
+
+Задачи пишут в разные заранее выделенные элементы среза; чтение всего результата идёт после Wait. Источник: [код Go 1.27.3](https://github.com/golang/go/blob/go1.27.3/src/sync/waitgroup.go#L220-L260).
+
+> [!example]- Запустить: WaitGroup.Go: результаты после Wait
+>
+> ```run-go
+> package main
+> 
+> import (
+> 	"fmt"
+> 	"sync"
+> )
+> 
+> func main() {
+> 	var wg sync.WaitGroup
+> 	results := make([]int, 4)
+> 	for i := range results {
+> 		wg.Go(func() {
+> 			results[i] = i * i
+> 		})
+> 	}
+> 	wg.Wait()
+> 	fmt.Println(results)
+> }
+> 
+> // Expected: [0 1 4 9].
+> ```
+
+### E7. Once и OnceValue: что будет после panic
+
+Recover нужен только для демонстрации двух попыток. Once не повторяет функцию; OnceValue повторяет панику при обращении. Источник: [код Go 1.27.3](https://github.com/golang/go/blob/go1.27.3/src/sync/oncefunc.go#L42-L74).
+
+> [!example]- Запустить: Once и OnceValue: что будет после panic
+>
+> ```run-go
+> package main
+> 
+> import (
+> 	"fmt"
+> 	"sync"
+> )
+> 
+> func observe(label string, f func()) {
+> 	defer func() {
+> 		if p := recover(); p != nil {
+> 			fmt.Println(label, "panic:", p)
+> 		}
+> 	}()
+> 	f()
+> 	fmt.Println(label, "returned")
+> }
+> 
+> func main() {
+> 	var once sync.Once
+> 	n := 0
+> 	f := func() {
+> 		n++
+> 		panic("boom")
+> 	}
+> 	observe("Do #1", func() { once.Do(f) })
+> 	observe("Do #2", func() { once.Do(f) })
+> 	fmt.Println("Do executions:", n)
+> 
+> 	n = 0
+> 	value := sync.OnceValue(func() int {
+> 		n++
+> 		panic("boom")
+> 	})
+> 	observe("OnceValue #1", func() { _ = value() })
+> 	observe("OnceValue #2", func() { _ = value() })
+> 	fmt.Println("OnceValue executions:", n)
+> }
+> 
+> // Expected:
+> // Do #1 panic: boom
+> // Do #2 returned
+> // Do executions: 1
+> // OnceValue #1 panic: boom
+> // OnceValue #2 panic: boom
+> // OnceValue executions: 1
+> ```
+
+### E8. Cond: билет до Unlock и предикат в цикле
+
+Ни Sleep, ни предположение о скорости запуска горутин не нужны. Производитель меняет очередь под тем же mu; consumer перепроверяет состояние после Wait. Источник: [код Go 1.27.3](https://github.com/golang/go/blob/go1.27.3/src/sync/cond.go#L52-L73).
+
+> [!example]- Запустить: Cond: билет до Unlock и предикат в цикле
+>
+> ```run-go
+> package main
+> import ("fmt"; "sync")
+> func main() {
+>  var mu sync.Mutex
+>  var wg sync.WaitGroup
+>  cond := sync.NewCond(&mu)
+>  var queue []int
+>  waiting := make(chan struct{})
+>  wg.Go(func() {
+>   mu.Lock()
+>   close(waiting) // Производитель начнёт бороться за mu.
+>   for len(queue) == 0 { cond.Wait() }
+>   value := queue[0]
+>   queue = queue[1:]
+>   mu.Unlock()
+>   fmt.Println(value)
+>  })
+>  <-waiting
+>  mu.Lock() // Получит mu после Unlock внутри Wait.
+>  queue = append(queue, 42)
+>  cond.Signal()
+>  mu.Unlock()
+>  wg.Wait()
+> }
+> // Ожидается: 42.
+> ```
+
+### E9. Map: два инкремента и потерянное обновление
+
+Оба Load принудительно выполнены до любого Store. Поэтому результат строго 1; race detector не обязан жаловаться на эту логическую ошибку. Источник: [код Go 1.27.3](https://github.com/golang/go/blob/go1.27.3/src/sync/map.go#L11-L43).
+
+> [!example]- Запустить: Map: два инкремента и потерянное обновление
+>
+> ```run-go
+> package main
+> 
+> import (
+> 	"fmt"
+> 	"sync"
+> )
+> 
+> func main() {
+> 	var m sync.Map
+> 	m.Store("counter", 0)
+> 	var wg sync.WaitGroup
+> 	ready := make(chan struct{}, 2)
+> 	proceed := make(chan struct{})
+> 	for range 2 {
+> 		wg.Go(func() {
+> 			old, _ := m.Load("counter")
+> 			ready <- struct{}{}
+> 			<-proceed
+> 			m.Store("counter", old.(int)+1)
+> 		})
+> 	}
+> 	<-ready
+> 	<-ready
+> 	close(proceed)
+> 	wg.Wait()
+> 	value, _ := m.Load("counter")
+> 	fmt.Println(value)
+> }
+> 
+> // Expected: 1. Both loads finish before either store.
+> // There is a lost update, but no data race on the map.
+> ```
+
+### E10. Pool: переиспользование без гарантии идентичности
+
+Второй Get вправе создать другой bytes.Buffer. Ожидаемый вывод одинаков и при переиспользовании сброшенного буфера, и при новом объекте. Источник: [код Go 1.27.3](https://github.com/golang/go/blob/go1.27.3/src/sync/pool.go#L15-L67).
+
+> [!example]- Запустить: Pool: переиспользование без гарантии идентичности
+>
+> ```run-go
+> package main
+> import ("bytes"; "fmt"; "sync")
+> func main() {
+>  pool := sync.Pool{New: func() any { return new(bytes.Buffer) }}
+>  b := pool.Get().(*bytes.Buffer)
+>  b.WriteString("first")
+>  fmt.Println(b.String())
+>  b.Reset()
+>  pool.Put(b)
+>  // После Put больше не обращаемся к b.
+>  c := pool.Get().(*bytes.Buffer)
+>  fmt.Println("len before reuse:", c.Len())
+>  c.WriteString("second")
+>  fmt.Println(c.String())
+> }
+> // Ожидается:
+> // first
+> // len before reuse: 0
+> // second
+> ```
+
+## Сноски к исполняемым примерам
+
+[^exec-happens-before]: [[#E1. Публикация через Mutex|Открыть пример E1]] — полный код, ожидаемый вывод и объяснение.
+[^exec-atomic]: [[#E2. Публикация immutable Config через atomic.Pointer|Открыть пример E2]] — полный код, ожидаемый вывод и объяснение.
+[^exec-semaphore]: [[#E3. Release до начала ожидания — модель токена|Открыть пример E3]] — полный код, ожидаемый вывод и объяснение.
+[^exec-mutex]: [[#E4. Составной инвариант под Mutex|Открыть пример E4]] — полный код, ожидаемый вывод и объяснение.
+[^exec-rwmutex]: [[#E5. Писатель закрывает вход новым читателям|Открыть пример E5]] — полный код, ожидаемый вывод и объяснение.
+[^exec-waitgroup]: [[#E6. WaitGroup.Go: результаты после Wait|Открыть пример E6]] — полный код, ожидаемый вывод и объяснение.
+[^exec-once]: [[#E7. Once и OnceValue: что будет после panic|Открыть пример E7]] — полный код, ожидаемый вывод и объяснение.
+[^exec-cond]: [[#E8. Cond: билет до Unlock и предикат в цикле|Открыть пример E8]] — полный код, ожидаемый вывод и объяснение.
+[^exec-map]: [[#E9. Map: два инкремента и потерянное обновление|Открыть пример E9]] — полный код, ожидаемый вывод и объяснение.
+[^exec-pool]: [[#E10. Pool: переиспользование без гарантии идентичности|Открыть пример E10]] — полный код, ожидаемый вывод и объяснение.
