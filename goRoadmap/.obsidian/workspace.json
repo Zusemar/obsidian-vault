@@ -93,12 +93,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "golang/sync/sync.Pool.md",
-                "mode": "source",
+                "file": "golang/sync/sync WaitGroup.md",
+                "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "sync.Pool"
+              "title": "sync WaitGroup"
             }
           }
         ],
@@ -266,6 +266,11 @@
   },
   "active": "7cf25159fb1ee7dd",
   "lastOpenFiles": [
+    "golang/sync/sync.Cond.md",
+    "golang/go Channel.md",
+    "golang/sync/sync.Map.md",
+    "golang/sync/sync.Once.md",
+    "golang/sync/sync.Pool.md",
     "golang/go memory model.md",
     "golang/Лекции/Лекция — sync Go 1.27 — 90 минут.md",
     "golang/sync/sync errgroup.md",
@@ -278,11 +283,8 @@
     "api/protobuf.md",
     "golang/sync/sync package.md",
     "golang/sync/sync WaitGroup.md",
-    "golang/go Channel.md",
     "инфраструктура/databases.md",
     "контесты/l2.md",
-    "golang/sync/sync.Map.md",
-    "golang/sync/sync.Once.md",
     "golang/go scheduler.md",
     "golang/go netpoller.md",
     "golang/go goroutine.md",
@@ -291,10 +293,8 @@
     "golang/go philosophy.md",
     "Без названия.md",
     "memory/project_vault_structure.md",
-    "z cv/PROJECT_ANALYSIS_REPORT_COMBINED.md",
     "контесты",
     "z cv",
-    "z cv/cv note.md",
     "Без названия.canvas",
     "Pasted image 20260616022918.png",
     "Pasted image 20260616112953.png",
