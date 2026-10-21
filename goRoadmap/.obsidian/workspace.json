@@ -93,12 +93,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "golang/go memory model.md",
+                "file": "golang/sync/sync.Pool.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "go memory model"
+              "title": "sync.Pool"
             }
           }
         ],
@@ -266,6 +266,7 @@
   },
   "active": "7cf25159fb1ee7dd",
   "lastOpenFiles": [
+    "golang/go memory model.md",
     "golang/Лекции/Лекция — sync Go 1.27 — 90 минут.md",
     "golang/sync/sync errgroup.md",
     "golang/sync/sync RWMutex.md",
@@ -295,7 +296,6 @@
     "z cv",
     "z cv/cv note.md",
     "Без названия.canvas",
-    "контесты/тиньк контест.md",
     "Pasted image 20260616022918.png",
     "Pasted image 20260616112953.png",
     "Pasted image 20260616023521.png",
