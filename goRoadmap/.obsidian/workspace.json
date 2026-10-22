@@ -94,7 +94,7 @@
               "type": "markdown",
               "state": {
                 "file": "golang/sync/sync WaitGroup.md",
-                "mode": "preview",
+                "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
