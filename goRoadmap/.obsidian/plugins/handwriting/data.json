@@ -1,0 +1,52 @@
+{
+  "savedViews": [],
+  "cameras": {},
+  "inkSizes": {
+    "pen": 1,
+    "highlighter": 0.313
+  },
+  "inkColors": {
+    "pen": "#de6b12",
+    "highlighter": "#ffd60a"
+  },
+  "pressureSensitivity": true,
+  "pressureChoice": true,
+  "inkSmoothing": true,
+  "inkAdaptsToTheme": false,
+  "inkReadableInExports": true,
+  "inkPdfColorMode": "darken",
+  "pageOwners": {
+    "79b7e39e-d378-4f6c-9857-52e34e421d8f": "golang/sync/sync atomic (атомики).md",
+    "aec9ee06-96fc-47cd-a3c1-163e4cacfc82": "golang/sync/sync WaitGroup.md"
+  },
+  "eraserRadiusPx": 8,
+  "mouseInk": false,
+  "strokePrediction": true,
+  "booxMode": false,
+  "einkHintOffered": false,
+  "scribbleHintOffered": false,
+  "paperStyle": "none",
+  "extendCanvasWhileScrolling": false,
+  "hideStatusBarOnInkedNotes": false,
+  "penTools": "auto",
+  "noteZoomControls": "auto",
+  "barsRestore": null,
+  "eraserMode": "reticle",
+  "penReticle": true,
+  "shapeSnap": true,
+  "devDiagnostics": false,
+  "slidesInk": true,
+  "colorSizeCommands": false,
+  "penPresets": [],
+  "toolbarCorner": "middle-right",
+  "stripFoldOrder": [
+    "editor:redo",
+    "handwriting:inline-tool-pan",
+    "handwriting:pen-ink-toggle",
+    "handwriting:paste-ink",
+    "handwriting:copy-selected-ink",
+    "handwriting:inline-tool-space"
+  ],
+  "inkFolder": ".handwriting",
+  "lastSeenVersion": "1.4.23"
+}

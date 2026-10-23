@@ -1,83 +1,271 @@
+#golang #concurrency #sync #собес #middle
+
+`sync` — пакет примитивов синхронизации. Источник: `src/sync/`. Все типы **нельзя копировать** после первого использования (`noCopy`).
+https://github.com/golang/go/tree/release-branch.go1.26/src/sync
+
 ---
-tags: [golang, sync, internals]
-go: go1.27.3
-verified: 2026-10-21
+
+## sync.Mutex
+
+### Внутреннее устройство
+
+```go
+type Mutex struct {
+    state int32   // битовое поле: locked | starvation | waiter_count
+    sema  uint32  // семафор для парковки горутин
+}
+
+// Биты поля state:
+// bit 0 (mutexLocked):    1 = заблокирован
+// bit 1 (mutexWoken):     горутина из sleep-очереди уже разбужена
+// bit 2 (mutexStarvation): режим голодания
+// bits 3+: количество горутин в очереди ожидания
+```
+
+### Режимы работы (Go 1.9+)
+
+**Normal mode:** пробуждённая горутина соревнуется за блокировку с новыми горутинами (которые уже на CPU). Новые **побеждают** — они уже в планировщике. Пробуждённая горутина встаёт в хвост очереди.
+
+**Starvation mode:** включается если горутина ждёт > 1ms. В этом режиме `Unlock` **напрямую передаёт** мьютекс горутине из головы очереди. Новые горутины в очередь не прыгают — честная очередь FIFO.
+
+```go
+var mu sync.Mutex
+
+mu.Lock()
+defer mu.Unlock()
+// критическая секция
+```
+
+### TryLock (Go 1.18+)
+
+```go
+if mu.TryLock() {
+    defer mu.Unlock()
+    // без блокировки
+} else {
+    // мьютекс занят, делаем что-то другое
+}
+```
+
+### Антипаттерны
+
+```go
+// ПЛОХО: копирование мьютекса
+type Cache struct{ mu sync.Mutex }
+c2 := c1  // go vet: assignment copies lock value
+
+// ПЛОХО: Lock без Unlock (забыли defer)
+func (c *Cache) Get(k string) string {
+    c.mu.Lock()
+    v := c.data[k]
+    // если return раньше Unlock → дедлок
+    c.mu.Unlock()
+    return v
+}
+
+// ХОРОШО: defer Unlock сразу после Lock
+func (c *Cache) Get(k string) string {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    return c.data[k]
+}
+
+// ПЛОХО: Lock в горутине, Unlock в другой (не детектируется race detector)
+go func() { mu.Lock() }()
+go func() { mu.Unlock() }()
+```
+
 ---
 
-# sync: карта пакета и чтения исходников
+## sync.RWMutex
 
-Основной сценарий занятия: [[Лекция — sync Go 1.27 — 90 минут]] — 90 минут с чтением кода.
+Множественные читатели **одновременно**, но **один** писатель. Оптимален когда чтений >> записей.
 
-Публичные примитивы: Mutex, RWMutex, WaitGroup, Once и его фабрики, Cond, Map, Pool; Locker — интерфейс. sync/atomic — отдельный пакет, errgroup — внешний модуль golang.org/x/sync.
+```go
+type RWMutex struct {
+    w           Mutex        // мьютекс для писателей
+    writerSem   uint32       // семафор для очереди писателей
+    readerSem   uint32       // семафор для очереди читателей
+    readerCount atomic.Int32 // число активных читателей (отрицательное = писатель ждёт)
+    readerWait  atomic.Int32 // число читателей которых ждёт писатель
+}
+```
 
-| Тема | Заметка | Главный инвариант |
+```go
+var rw sync.RWMutex
+
+// Читатель:
+rw.RLock()
+defer rw.RUnlock()
+v := cache[key]
+
+// Писатель:
+rw.Lock()
+defer rw.Unlock()
+cache[key] = value
+```
+
+**Ловушка:** если писатель ждёт — новые читатели блокируются (чтобы предотвратить starvation писателей).
+
+```go
+// TryRLock / TryLock (Go 1.18+)
+if rw.TryRLock() {
+    defer rw.RUnlock()
+    return cache[key]
+}
+```
+
+---
+
+## sync.Once
+
+Гарантирует однократное выполнение функции, потокобезопасно:
+
+```go
+type Once struct {
+    done atomic.Uint32  // 0 = не выполнялось, 1 = выполнено
+    m    Mutex
+}
+```
+
+```go
+var (
+    instance *DB
+    once     sync.Once
+)
+
+func GetDB() *DB {
+    once.Do(func() {
+        instance = openDB()
+    })
+    return instance
+}
+```
+
+**Важно:** если `f()` паникует — `Once` считается выполненным. Повторные вызовы `Do` не запустят `f` снова.
+
+**OnceFunc / OnceValue / OnceValues (Go 1.21+):**
+```go
+// Более эргономичные обёртки
+getDB := sync.OnceValue(func() *DB { return openDB() })
+db := getDB()  // безопасно вызывать несколько раз
+```
+
+---
+
+## sync.WaitGroup
+
+Ожидание завершения группы горутин:
+
+```go
+type WaitGroup struct {
+    noCopy noCopy
+    state  atomic.Uint64  // counter (высокие 32 бита) + waiter count (низкие 32 бита)
+    sema   uint32
+}
+```
+
+```go
+var wg sync.WaitGroup
+
+for _, item := range items {
+    wg.Add(1)
+    go func(item Item) {
+        defer wg.Done()  // = Add(-1)
+        process(item)
+    }(item)
+}
+
+wg.Wait()  // блокируется пока counter != 0
+```
+
+**Правило:** `Add` должен вызываться **до** запуска горутины (иначе race с Wait):
+
+```go
+// ПЛОХО: Add внутри горутины — race с Wait
+go func() {
+    wg.Add(1)  // может выполниться после Wait
+    defer wg.Done()
+    process()
+}()
+
+// ХОРОШО: Add перед go
+wg.Add(1)
+go func() {
+    defer wg.Done()
+    process()
+}()
+```
+
+---
+
+## sync.Cond
+
+Условная переменная — горутина ждёт наступления условия:
+
+```go
+type Cond struct {
+    L Locker  // должен быть *Mutex или *RWMutex
+    // ...
+}
+
+cond := sync.NewCond(&mu)
+
+// Горутина-потребитель (ждёт данных):
+mu.Lock()
+for len(queue) == 0 {      // всегда в цикле (spurious wakeups)
+    cond.Wait()             // атомарно: unlock(mu) + park + lock(mu)
+}
+item := queue[0]
+queue = queue[1:]
+mu.Unlock()
+
+// Горутина-производитель (сигнализирует):
+mu.Lock()
+queue = append(queue, item)
+cond.Signal()   // разбудить одну горутину
+// cond.Broadcast()  // разбудить все
+mu.Unlock()
+```
+
+**На практике** `sync.Cond` редко нужен — обычно заменяется каналами или `sync.WaitGroup`.
+
+---
+
+## sync.Map — когда использовать
+
+| Паттерн | sync.Mutex + map | sync.Map |
 |---|---|---|
-| sync Mutex | [[sync Mutex]] | разбудить претендента не равно передать владение |
-| sync RWMutex | [[sync RWMutex]] | писатель закрывает вход новым читателям |
-| sync WaitGroup | [[sync WaitGroup]] | зарегистрировать работу до ожидания пустой группы |
-| sync.Once | [[sync.Once]] | остальные вызовы дожидаются завершения инициализации |
-| sync.Cond | [[sync.Cond]] | билет до Unlock; предикат перепроверяется после Lock |
-| sync.Map | [[sync.Map]] | атомарность операции не даёт транзакцию нескольких вызовов |
-| sync.Pool | [[sync.Pool]] | право забыть объект сохраняется всегда |
-| sync atomic (атомики) | [[sync atomic (атомики)]] | атомарность ячейки не заменяет протокол |
-| sync errgroup | [[sync errgroup]] | ошибки, ожидание, отмена и допуск — разные обязанности |
+| Много записей | ✅ | ❌ медленнее |
+| Read-heavy, стабильные ключи | ❌ lock на каждое чтение | ✅ lock-free read |
+| Много уникальных ключей | ✅ | ❌ (dirty map растёт) |
+| Ключи добавляются раз, читаются много | ✅ | ✅ |
 
-## 1. 00–07. Начинаем с контракта и атомарной публикации
+**Правило:** default — `sync.Mutex + map`. `sync.Map` — только для специфичных паттернов (cache, registry).
 
-### 00–02. Что именно мы должны доказать
+---
 
-Попросите назвать две разные задачи синхронизации: исключить одновременное нарушение инварианта и сделать результаты одной горутины видимыми другой. Для `Mutex` контракт говорит: n-й `Unlock` synchronizes-before m-го `Lock` при `n < m`. Успешный `TryLock` равен `Lock` по этому отношению, проваленный не даёт отношения синхронизации. Откройте [комментарии публичного Mutex](https://github.com/golang/go/blob/go1.27.3/src/sync/mutex.go#L1-L66) и [раздел Locks модели памяти](https://go.dev/ref/mem#Locks).
+## Вопросы на собесе
 
-```go
-// Одна и та же mu в обеих горутинах.
-mu.Lock()
-x = 42
-mu.Unlock()
+**Чем отличается Mutex от RWMutex?**
+Mutex — один обладатель; RWMutex — много читателей одновременно, но писатель эксклюзивен. Используй RWMutex когда чтений значительно больше записей.
 
-// Другая горутина, захватившая mu после этой записи:
-mu.Lock()
-fmt.Println(x)
-mu.Unlock()
-```
+**Что такое starvation mode в Mutex?**
+Если горутина ждёт мьютекс > 1ms, включается режим голодания: мьютекс передаётся напрямую горутине из головы очереди (честный FIFO), новые горутины не прыгают вперёд.
 
-Цепочка доказательства: запись `x` → порядок внутри первой горутины → `Unlock` → synchronizes-before → успешный `Lock` → чтение `x`. Именно цепочка, а не прошедшее время, объясняет видимость. Data race — конфликтующие обычные доступы, не упорядоченные happens-before; в Go нельзя автоматически переносить на них модель «любое поведение допустимо» из C++. Точные ограничения приведены в [Memory model: data races](https://go.dev/ref/mem#restrictions).
+**Можно ли копировать sync.Mutex?**
+Нет. Копирование создаёт независимый мьютекс с нулевым состоянием, что ломает синхронизацию. `go vet` ловит через `noCopy`.
 
-### 02–05. Атомики — строительные блоки, а не готовая транзакция
+**Зачем WaitGroup.Add перед go?**
+Если Add вызвать внутри горутины, Wait может завершиться до Add — race condition.
 
-Прочитайте [контракт sync/atomic](https://github.com/golang/go/blob/go1.27.3/src/sync/atomic/doc.go#L1-L222): операции выглядят выполненными в едином последовательно согласованном порядке; если B наблюдает эффект A, A synchronizes-before B. В API нет пользовательского выбора `relaxed`/`acquire`/`release`. Из этого не следует, что две отдельные атомарные записи образуют один неделимый снимок.
+---
 
-```go
-type Config struct {
-    Endpoint string
-    Limit    int
-}
-var current atomic.Pointer[Config]
+## Связанные темы
 
-func publish() {
-    c := &Config{Endpoint: "internal", Limit: 8}
-    current.Store(c)
-}
-func read() *Config { return current.Load() }
-```
-
-Почему читатель, наблюдающий опубликованный указатель, видит инициализированные поля? Инициализация предшествует `Store`, наблюдающий её `Load` связывает горутины, чтение полей идёт после `Load`. Условия примера: читатель обрабатывает `nil`, если публикации ещё не было, а опубликованный объект после `Store` не мутируется. Атомарность указателя не распространяется на конкурентные записи в `Endpoint` или `Limit`. Опора: [Pointer[T]](https://github.com/golang/go/blob/go1.27.3/src/sync/atomic/type.go#L44-L70) и [правило наблюдения эффекта](https://github.com/golang/go/blob/go1.27.3/src/sync/atomic/doc.go#L1-L222).
-
-### 05–07. Как читать следующие файлы
-
-На каждом шаге задаём четыре вопроса: что защищено, кто может менять состояние, где фиксируется переход и почему ожидание не потеряет пробуждение. Отдельно помечаем **контракт**, **реализацию go1.27.3** и **наш вывод из реализации**. Например, поле `state` — реализация; запрет копирования использованного mutex — контракт. `noCopy` помогает статическому анализу, но ничего не блокирует во время выполнения. Сверьте [noCopy](https://github.com/golang/go/blob/go1.27.3/src/sync/cond.go#L113-L124) и [публичный тип](https://github.com/golang/go/blob/go1.27.3/src/sync/mutex.go#L1-L66).
-
-Внутренний CAS не следует трактовать как часть публичного happens-before протокола. Особенно хорошо это видно у `RWMutex`: обработка атомарной синхронизации для race detector временно отключается, чтобы внутренний общий счётчик не скрывал гонки между читателями. Вернёмся к [комментарию перед RLock](https://github.com/golang/go/blob/go1.27.3/src/sync/rwmutex.go#L16-L61) в разделе про RWMutex.
-
-**Вопрос аудитории:** если сделать `Load` двух разных atomic-полей подряд, получается ли согласованный снимок пары? **Ответ:** нет, между ними писатель может обновить одно поле; нужен протокол версии, неизменяемый объект за одним указателем или общий lock.
-
-
-## 10. 87–90. Проверка маршрута чтения
-
-За последнюю минуту обсуждения каждой задачи слушатель должен назвать и инвариант, и исходную функцию.
-
-1. **Почему release перед park не теряется?** В semaphore сохраняется токен; после регистрации waiter есть повторная проверка под root lock. В Cond сначала выдаётся ticket, затем отпускается L; notified ticket не паркуется. Источники: [semacquire1](https://github.com/golang/go/blob/go1.27.3/src/runtime/sema.go#L146-L201) и [notifyListWait](https://github.com/golang/go/blob/go1.27.3/src/runtime/sema.go#L584-L626).
-2. **Почему CAS(done=false→true) недостаточно для Once?** Второй вызов может вернуться до завершения f; нужна сериализация незавершённой инициализации и публикация результата после f. Источник: [авторский контрпример](https://github.com/golang/go/blob/go1.27.3/src/sync/once.go#L32-L71).
-3. **Почему «всё на атомиках» не доказывает корректность?** Атомарность отдельных операций не задаёт транзакцию над несколькими состояниями. На практическом уровне это потеря обновления у Map и гонка допуска в примере shutdown из исходной заметки. Контракт атомиков: [sequential consistency](https://github.com/golang/go/blob/go1.27.3/src/sync/atomic/doc.go#L1-L222).
-
-**Критерий результата занятия:** слушатель может открыть незнакомый sync-примитив, найти контракт, состояние, точку перехода, регистрацию ожидания, пробуждение и объяснить хотя бы одно опасное чередование. Назвать число корзин semtable без этого недостаточно.
-
+- [[sync atomic (атомики)]] — атомики как альтернатива для одной переменной; CAS vs mutex
+- [[go goroutine]] — `waitReasonSyncMutexLock` — причина парковки горутины
+- [[go scheduler]] — mutex усыпляет горутину через sema (планировщик), CAS-loop нет
+- [[sync.Map]] — `mu Mutex` защищает dirty-карту; когда использовать sync.Map
+- [[go Channel]] — каналы как альтернатива mutex для передачи данных
+- [[go concurrency patterns]] — Worker Pool использует WaitGroup; Once для singleton

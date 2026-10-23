@@ -12,7 +12,9 @@
   "removeElements": "",
   "expiry": "",
   "clipboard": true,
-  "shareUnencrypted": false,
+  "shareUnencrypted": true,
+  "includeSource": false,
   "authRedirect": null,
+  "shareStyleChosen": true,
   "debug": 0
 }
