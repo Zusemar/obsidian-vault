@@ -1,5 +1,7 @@
 ---
 handwriting-page-id: aec9ee06-96fc-47cd-a3c1-163e4cacfc82
+share_link: https://share.note.sx/ia5eyh8l
+share_updated: 2026-10-23T03:17:41+03:00
 ---
 #golang #concurrency #sync #internals
 
