@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "golang/sync/sync Mutex.md",
+                "file": "golang/sync/sync RWMutex.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "sync Mutex"
+              "title": "sync RWMutex"
             }
           }
         ]
@@ -185,6 +185,7 @@
   },
   "active": "930180dde901e035",
   "lastOpenFiles": [
+    "golang/sync/sync Mutex.md",
     "сети/HTTP.md",
     "golang/sync/sync WaitGroup.md",
     "Без названия 1.md",
@@ -198,7 +199,6 @@
     "golang/sync/sync errgroup.md",
     "golang/sync/sync package.md",
     "golang/go philosophy.md",
-    "golang/sync/sync Mutex.md",
     "golang/go context.md",
     "golang/go compiler.md",
     "golang/go closures.md",
