@@ -225,7 +225,7 @@ items := make([]Item, 1_000_000)
 
 ## Связанные темы
 
-- [[go memory model]] — mspan, gcmarkBits, allocBits; span'ы возвращаются в пул при sweep
+- [[go memory + allocator]] — mspan, gcmarkBits, allocBits; span'ы возвращаются в пул при sweep
 - [[go goroutine]] — `gcBgMarkWorker` — фоновые горутины фазы mark; утечки горутин препятствуют GC
 - [[go escape analysis]] — определяет попадает ли объект в heap (и под GC) или остаётся на стеке
 - [[sync.Pool]] — `poolCleanup` вызывается перед каждым GC-циклом; victim cache

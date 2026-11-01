@@ -174,7 +174,7 @@ type error interface {
 
 - `go build` — компиляция, статическая линковка по умолчанию (один бинарь) → [[go compiler]]
 - `go vet` — статический анализ (находит частые баги)
-- `go test -race` — race detector (основан на ThreadSanitizer) → [[go memory model]]
+- `go test -race` — race detector (основан на ThreadSanitizer) → [[go memory + allocator]]
 - `go tool pprof` — CPU/memory профилирование
 - `go tool trace` — трассировка scheduler, GC, syscalls → [[go scheduler]]
 - `go generate` — кодогенерация по `//go:generate` комментариям
@@ -200,7 +200,7 @@ type error interface {
 - [[go generics]] — type parameters, constraints, ограничения
 - [[go escape analysis]] — как компилятор решает stack vs heap
 - [[go gc]] — tri-color mark-and-sweep, паузы, GOGC/GOMEMLIMIT
-- [[go memory model]] — happens-before, гарантии синхронизации, race detector
+- [[go memory + allocator]] — happens-before, гарантии синхронизации, race detector
 
 ### Concurrency
 - [[go goroutine]] — жизненный цикл, утечки, best practices

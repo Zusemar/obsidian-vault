@@ -305,7 +305,7 @@ mu.Lock() // дедлок — Lock ждёт когда RLock уйдёт, но RL
 - [[sync Mutex]] — используется внутри RWMutex для сериализации писателей; сравнение fast/slow path
 - [[sync package]] — обзор всего пакета sync: Once, Cond, WaitGroup, Pool
 - [[sync atomic (атомики)]] — атомики на которых строится readerCount / readerWait
-- [[go memory model]] — happens-before гарантии RWMutex, видимость записей после Unlock
+- [[go memory + allocator]] — happens-before гарантии RWMutex, видимость записей после Unlock
 - [[sync WaitGroup]] — другой примитив sync, ожидание группы горутин
 - [[sync.Map]] — concurrent map; альтернатива `map + RWMutex` при read-heavy нагрузке
 - [[sync.Pool]] — переиспользование объектов без блокировок

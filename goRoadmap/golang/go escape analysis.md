@@ -135,6 +135,6 @@ func BenchmarkHeap(b *testing.B) {
 ## Связанные темы
 
 - [[go compiler]] — escape analysis встроен в компилятор, запускается на этапе компиляции
-- [[go memory model]] — результат анализа определяет, использовать стек или heap-аллокатор (mspan/mcache)
+- [[go memory + allocator]] — результат анализа определяет, использовать стек или heap-аллокатор (mspan/mcache)
 - [[go gc]] — объекты на стеке не требуют GC; чем меньше escape → меньше давление на GC
 - [[go goroutine]] — каждая горутина имеет собственный стек; `_defer` и `_panic` могут уходить в heap

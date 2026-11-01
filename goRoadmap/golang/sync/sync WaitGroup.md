@@ -484,4 +484,4 @@ goready(gp)
 - [[go Channel]] — `sudog` используется и тут, и там; похожая механика парковки
 - [[sync package]] — `sync.Mutex` использует те же семафоры рантайма с `handoff=true`
 - [[sync atomic (атомики)]] — `atomic.Uint64` под капотом `state`; CAS в `Wait`
-- [[go memory model]] — happens-before гарантии: `Done` happens-before возврата из `Wait`
+- [[go memory + allocator]] — happens-before гарантии: `Done` happens-before возврата из `Wait`

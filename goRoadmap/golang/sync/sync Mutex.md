@@ -195,4 +195,4 @@ Unlock → runtime_Semrelease(&m.sema):
 - [[go scheduler]] — `gopark` снимает горутину с M; `goready` возвращает в run queue
 - [[go goroutine]] — статусы горутины: `_Grunning` → `_Gwaiting` → `_Grunnable`
 - [[sync atomic (атомики)]] — CAS и `LOCK XADD` под капотом `state`
-- [[go memory model]] — happens-before: `Unlock` happens-before следующего `Lock`
+- [[go memory + allocator]] — happens-before: `Unlock` happens-before следующего `Lock`
