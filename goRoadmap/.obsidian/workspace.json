@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "golang/sync/sync Mutex.md",
+                "file": "Без названия.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "sync Mutex"
+              "title": "Без названия"
             }
           }
         ],
@@ -198,19 +198,21 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "b935c7f5d6137e01",
+  "active": "db41f4e3ead2cfbd",
   "lastOpenFiles": [
+    "Без названия 1.md",
+    "Без названия.canvas",
+    "Без названия 2.md",
+    "golang/sync/sync Mutex.md",
     "golang/sync/sync.Cond.md",
     "golang/sync/sync.Map.md",
     "golang/sync/sync.Pool.md",
     "golang/sync/sync.Once.md",
     "golang/go Channel.md",
     "golang/go memory + allocator.md",
-    "golang/sync/sync Mutex.md",
     "golang/sync/sync RWMutex.md",
     "сети/HTTP.md",
     "golang/sync/sync WaitGroup.md",
-    "Без названия 1.md",
     "контесты/тиньк контест.md",
     "контесты/l2.md",
     "контесты/тиньк контест код.md",
@@ -224,12 +226,9 @@
     "golang/go compiler.md",
     "golang/go closures.md",
     "golang/sync/sync atomic (атомики).md",
-    "golang/Лекции/Лекция — sync Go 1.27 — 90 минут.md",
     "golang/Лекции",
-    "api/gRPC.md",
     "контесты",
     "z cv",
-    "Без названия.canvas",
     "Pasted image 20260616022918.png",
     "Pasted image 20260616112953.png",
     "Pasted image 20260616023521.png",
