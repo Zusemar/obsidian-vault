@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Без названия.md",
+                "file": "идеи для задач из прака.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Без названия"
+              "title": "идеи для задач из прака"
             }
           }
         ],
@@ -200,9 +200,10 @@
   },
   "active": "db41f4e3ead2cfbd",
   "lastOpenFiles": [
-    "Без названия 1.md",
+    "пробелы.md",
+    "Без названия.md",
     "Без названия.canvas",
-    "Без названия 2.md",
+    "идеи для задач из прака.md",
     "golang/sync/sync Mutex.md",
     "golang/sync/sync.Cond.md",
     "golang/sync/sync.Map.md",
@@ -216,7 +217,6 @@
     "контесты/тиньк контест.md",
     "контесты/l2.md",
     "контесты/тиньк контест код.md",
-    "Без названия.md",
     "golang/go SOLID.md",
     "z cv/ALGORITHMS_OVERVIEW.md",
     "golang/sync/sync errgroup.md",
